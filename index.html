@@ -258,7 +258,7 @@ input,select{background:#1b130c;color:var(--ink);border:1px solid #8a6b44;border
  .pick .lt>.pa:last-child>.row .btn{width:150px!important;padding-inline:8px!important}
 }
 .lvbanner{font-family:var(--display);color:var(--gold);font-size:18px;text-align:center;letter-spacing:.08em;text-shadow:0 0 12px rgba(224,184,90,.6);margin:6px 0}
-.card.lvc{justify-items:center;text-align:center;gap:7px;padding:14px 10px;min-height:190px}.lvc .lvico{filter:drop-shadow(0 0 10px rgba(224,184,90,.35))}
+.lvx{position:absolute;top:4px;right:6px;width:24px;height:24px;line-height:22px;text-align:center;border:1px solid #6a5238;border-radius:50%;background:#1a120a;color:#d9a05a;font-size:13px;cursor:pointer;z-index:2}.lvx:hover{background:#5a2a1a;color:#fff}.card.lvc{position:relative;justify-items:center;text-align:center;gap:7px;padding:14px 10px;min-height:190px}.lvc .lvico{filter:drop-shadow(0 0 10px rgba(224,184,90,.35))}
 .lvtag{font-size:10px;letter-spacing:.16em;color:#1b130c;background:var(--gold);padding:2px 8px;border-radius:2px;font-weight:700}
 .lvc:hover{transform:translateY(-4px);box-shadow:0 0 18px rgba(224,184,90,.45)}
 .rkbar{height:10px;background:#120c07;border:1px solid #6a5035;border-radius:6px;overflow:hidden}.rkbar i{display:block;height:100%;background:linear-gradient(90deg,#8a6b44,#e0b85a)}
@@ -444,6 +444,14 @@ A('horde','Bone Horde',2,3,'tile',{summon:'thrall',n:2,d:'Raise two thralls.'});
 A('plague','Plague Cloud',2,4,'tile',{p:.3,aoe:2,fx:[['poison',4,3]],d:'Choking miasma.'});
 A('pest','Pestilence',2,0,'self',{all:'foes',fx:[['poison',3,2]],d:'Poison every foe.'});
 
+/* cooldowns (turns until a skill can be used again). Basic attacks have none; ultimates use charge instead. */
+const CDS={bash:3,hold:3,charge:3,aegis:2,rally:4,reap:3,rage:4,sunder:2,quake:3,warcry:4,condemn:3,
+ cinder:2,blink:3,ember:2,inferno:4,spread:4,freeze:3,chain:2,clap:3,overcharge:4,hex:3,
+ fan:2,step:3,venom:1,mark:3,vanish:4,miasma:3,catalyze:2,riposte:3,flourish:2,keen:4,deathbrand:3,
+ mend:1,ward:3,purify:2,burst:3,judge:3,prayer:4,gift:3,brand:2,scourge:2,zeal:5,anathema:3,
+ volley:2,snare:3,prey:3,dead:3,steady:3,hound:5,howl:4,thornwall:3,rootbind:4,quickdraw:3,killzone:4,
+ wither:2,raise:4,siphon:2,soulfire:2,gchill:2,spear:2,horde:5,plague:3,pest:4,bloodpact:4,blight:3};
+for(const k in AB)AB[k].cd=AB[k].ult?0:(CDS[k]||0);
 const CLS={
  knight:{n:'Ironbound',role:'Vanguard',hp:70,atk:10,armor:2,mv:3,col:'#8fa3bf',g:'I',abs:['cleave','bash','hold','charge'],ult:'godbreaker',learn:['warcry','condemn'],
   d:'Oath-sworn frontliner who holds the line against the gods.',
@@ -532,83 +540,83 @@ const DIFF=[null,
 const ITEMS={
  emberring:{n:'Ember Ring',slot:'ring',m:{atk:1,gain:1},cost:55,d:'+1 attack, +1 charge/action'},
  wardring:{n:'Warding Band',slot:'ring',m:{armor:1,sh:4},cost:55,d:'+1 armor, +4 starting shield'},
- vigorring:{n:'Ring of Vigor',slot:'ring',m:{hp:10},cost:50,d:'+10 max HP'},
- leechring:{n:'Leech Signet',slot:'ring',m:{steal:.08,atk:1},cost:65,d:'+1 attack, 8% lifesteal',rar:2},
- lantern:{n:'Pale Lantern',slot:'trinket',m:{gain:3,hp:5},cost:70,d:'+3 charge/action, +5 HP'},
- bellshard:{n:'Cracked Bell',slot:'trinket',m:{armor:2,thorns:2},cost:70,d:'+2 armor, 2 thorns'},
- dawnshard:{n:'Dawn Shard',slot:'trinket',m:{atk:2,mv:1},cost:85,d:'+2 attack, +1 move',rar:2},
- oathcoin:{n:'Oath Coin',slot:'trinket',m:{hp:8,atk:1,armor:1},cost:80,d:'+8 HP, +1 attack, +1 armor',rar:2},
- ashblade:{n:'Ashen Blade',slot:'weapon',m:{atk:2},cost:40,d:'+2 attack'},
- maul:{n:'Gravebreaker Maul',slot:'weapon',m:{atk:3,mv:-1},cost:50,d:'+3 attack, -1 move'},
+ vigorring:{n:'Ring of Vigor',slot:'ring',m:{hp:7},cost:50,d:'+7 max HP'},
+ leechring:{n:'Leech Signet',slot:'ring',m:{steal:.05,atk:1},cost:65,d:'+1 attack, 5% lifesteal',rar:2},
+ lantern:{n:'Pale Lantern',slot:'trinket',m:{gain:2,hp:4},cost:70,d:'+2 charge/action, +4 HP'},
+ bellshard:{n:'Cracked Bell',slot:'trinket',m:{armor:1,thorns:2},cost:70,d:'+1 armor, 2 thorns'},
+ dawnshard:{n:'Dawn Shard',slot:'trinket',m:{atk:1,mv:1},cost:85,d:'+1 attack, +1 move',rar:2},
+ oathcoin:{n:'Oath Coin',slot:'trinket',m:{hp:6,atk:1,armor:1},cost:80,d:'+6 HP, +1 attack, +1 armor',rar:2},
+ ashblade:{n:'Ashen Blade',slot:'weapon',m:{atk:1},cost:40,d:'+1 attack'},
+ maul:{n:'Gravebreaker Maul',slot:'weapon',m:{atk:2,mv:-1},cost:50,d:'+2 attack, -1 move'},
  oathsteel:{n:'Oathsteel Sword',slot:'weapon',m:{atk:1,armor:1},cost:45,d:'+1 attack, +1 armor'},
- hollowbow:{n:'Hollow Bow',slot:'weapon',m:{atk:2,steal:.1},cost:55,d:'+2 attack, 10% lifesteal'},
- thornstaff:{n:'Thornwood Staff',slot:'weapon',m:{atk:2,gain:2},cost:50,d:'+2 attack, +2 charge/action'},
- sunlance:{n:'Sunlance',slot:'weapon',m:{atk:4},cost:80,d:'+4 attack',rar:2},
+ hollowbow:{n:'Hollow Bow',slot:'weapon',m:{atk:1,steal:.06},cost:55,d:'+1 attack, 6% lifesteal'},
+ thornstaff:{n:'Thornwood Staff',slot:'weapon',m:{atk:1,gain:2},cost:50,d:'+1 attack, +2 charge/action'},
+ sunlance:{n:'Sunlance',slot:'weapon',m:{atk:3},cost:80,d:'+3 attack',rar:2},
  embervial:{n:'Vial of Embers',slot:'relic',m:{onhit:['burn',2,2]},cost:55,d:'Attacks burn'},
- saintrib:{n:"Saint's Rib",slot:'relic',m:{hp:14},cost:40,d:'+14 max HP'},
- mirror:{n:'Mirror Shard',slot:'relic',m:{thorns:4},cost:45,d:'Reflect 4 damage'},
+ saintrib:{n:"Saint's Rib",slot:'relic',m:{hp:10},cost:40,d:'+10 max HP'},
+ mirror:{n:'Mirror Shard',slot:'relic',m:{thorns:3},cost:45,d:'Reflect 3 damage'},
  frostglass:{n:'Frostglass',slot:'relic',m:{onhit:['chill',1,0]},cost:50,d:'Attacks chill'},
  venomfang:{n:'Venomfang',slot:'relic',m:{onhit:['poison',2,2]},cost:55,d:'Attacks poison'},
- heartstone:{n:'Heartstone',slot:'relic',m:{hp:10,armor:1},cost:60,d:'+10 HP, +1 armor',rar:2},
- wardstone:{n:'Wardstone',slot:'relic',m:{sh:12},cost:45,d:'Start fights with a 12 shield'},
+ heartstone:{n:'Heartstone',slot:'relic',m:{hp:7,armor:1},cost:60,d:'+7 HP, +1 armor',rar:2},
+ wardstone:{n:'Wardstone',slot:'relic',m:{sh:8},cost:45,d:'Start fights with an 8 shield'},
  boots:{n:'Boots of Haste',slot:'charm',m:{mv:1},cost:45,d:'+1 move'},
- crowskull:{n:'Crow Skull',slot:'charm',m:{gain:3},cost:40,d:'+3 charge on every action'},
- ironring:{n:'Iron Ring',slot:'charm',m:{armor:2},cost:40,d:'+2 armor'},
- bloodcharm:{n:'Blood Charm',slot:'charm',m:{steal:.2},cost:50,d:'20% lifesteal'},
- martyr:{n:"Martyr's Tear",slot:'charm',m:{hp:8,atk:1},cost:50,d:'+8 HP, +1 attack'},
- lucky:{n:'Hollow Coin',slot:'charm',m:{hp:6,mv:1},cost:50,d:'+6 HP, +1 move'},
- godsplinter:{n:'Godsplinter',slot:'charm',m:{atk:3,gain:4},cost:90,d:'+3 attack, +4 charge',rar:2}};
+ crowskull:{n:'Crow Skull',slot:'charm',m:{gain:2},cost:40,d:'+2 charge on every action'},
+ ironring:{n:'Iron Ring',slot:'charm',m:{armor:1},cost:40,d:'+1 armor'},
+ bloodcharm:{n:'Blood Charm',slot:'charm',m:{steal:.12},cost:50,d:'12% lifesteal'},
+ martyr:{n:"Martyr's Tear",slot:'charm',m:{hp:6,atk:1},cost:50,d:'+6 HP, +1 attack'},
+ lucky:{n:'Hollow Coin',slot:'charm',m:{hp:5,mv:1},cost:50,d:'+5 HP, +1 move'},
+ godsplinter:{n:'Godsplinter',slot:'charm',m:{atk:2,gain:3},cost:90,d:'+2 attack, +3 charge',rar:2}};
 const ARTS={
- banner:{n:'Banner of the Fallen',m:{atkp:.1},d:'Party deals +10% damage'},
- coin:{n:"Widow's Coin",m:{gold:.3},d:'+30% gold from fights'},
- lantern:{n:'Lantern of Souls',m:{after:.15},d:'Party heals 15% after each fight'},
- splinter:{n:'Divine Splinter',m:{start:35},d:'Fights begin with 35 charge'},
- crown:{n:'Hollow Crown',m:{xp:.25},d:'+25% experience'},
+ banner:{n:'Banner of the Fallen',m:{atkp:.06},d:'Party deals +6% damage'},
+ coin:{n:"Widow's Coin",m:{gold:.2},d:'+20% gold from fights'},
+ lantern:{n:'Lantern of Souls',m:{after:.1},d:'Party heals 10% after each fight'},
+ splinter:{n:'Divine Splinter',m:{start:20},d:'Fights begin with 20 charge'},
+ crown:{n:'Hollow Crown',m:{xp:.15},d:'+15% experience'},
  aegis:{n:'Aegis of Dust',m:{armor:1},d:'All heroes +1 armor'},
  bell:{n:'Cracked Bell',m:{mv:1},d:'All heroes +1 move'},
- chalice:{n:'Chalice of Ash',m:{hp:8},d:'All heroes +8 max HP'},
- sigil:{n:'Sigil of Oaths',m:{gain:2},d:'+2 charge on every action'},
- thornring:{n:'Ring of Thorns',m:{thorns:2},d:'All heroes reflect 2'},
- ichor:{n:'Godsblood Ichor',m:{steal:.08},d:'8% party lifesteal'},
- oath:{n:'Broken Oath',m:{atkp:.15,hp:-5},d:'+15% damage, -5 max HP'}};
+ chalice:{n:'Chalice of Ash',m:{hp:5},d:'All heroes +5 max HP'},
+ sigil:{n:'Sigil of Oaths',m:{gain:1},d:'+1 charge on every action'},
+ thornring:{n:'Ring of Thorns',m:{thorns:1},d:'All heroes reflect 1'},
+ ichor:{n:'Godsblood Ichor',m:{steal:.05},d:'5% party lifesteal'},
+ oath:{n:'Broken Oath',m:{atkp:.1,hp:-6},d:'+10% damage, -6 max HP'}};
 const BLESS={
  ember:{n:'Blessing of Ash',m:{onhit:['burn',2,2]},d:'Your attacks burn.'},
  frost:{n:'Blessing of Rime',m:{onhit:['chill',1,0]},d:'Your attacks chill.'},
  venom:{n:'Blessing of Venom',m:{onhit:['poison',2,2]},d:'Your attacks poison.'},
- blood:{n:'Blessing of Blood',m:{steal:.15},d:'15% lifesteal.'},
- thorn:{n:'Blessing of Thorns',m:{thorns:3},d:'Reflect 3 damage.'},
+ blood:{n:'Blessing of Blood',m:{steal:.1},d:'10% lifesteal.'},
+ thorn:{n:'Blessing of Thorns',m:{thorns:2},d:'Reflect 2 damage.'},
  swift:{n:'Blessing of Wind',m:{mv:1},d:'+1 move.'},
- stone:{n:'Blessing of Stone',m:{armor:2},d:'+2 armor.'},
- oath:{n:'Blessing of Oaths',m:{gain:4},d:'+4 charge on every action.'}};
+ stone:{n:'Blessing of Stone',m:{armor:1},d:'+1 armor.'},
+ oath:{n:'Blessing of Oaths',m:{gain:3},d:'+3 charge on every action.'}};
 const EVENTS=[
  {t:'The Weeping Shrine',d:'A cracked altar bleeds gold. A voice asks for a price.',c:[
-  {l:'Pay in blood (-12 HP each, +60 gold)',fx:{hpall:-12,gold:60}},{l:'Leave an offering (-30 gold, heal 30%)',fx:{gold:-30,healp:.3}},{l:'Walk on',fx:{}}]},
+  {l:'Pay in blood (-12 HP each, +35 gold)',fx:{hpall:-12,gold:35}},{l:'Leave an offering (-30 gold, heal 30%)',fx:{gold:-30,healp:.3}},{l:'Walk on',fx:{}}]},
  {t:'The Fallen Knight',d:'A dead knight still clutches a sword.',c:[
   {l:'Take the sword (random item)',fx:{item:1}},{l:'Bury him (+40 xp)',fx:{xp:40}},{l:'Walk on',fx:{}}]},
  {t:'Godsplinter Cache',d:'A fragment of a slain god hums in the dirt.',c:[
-  {l:'Grasp it (random artifact, -15 HP each)',fx:{art:1,hpall:-15}},{l:'Sell it (+90 gold)',fx:{gold:90}}]},
+  {l:'Grasp it (random artifact, -15 HP each)',fx:{art:1,hpall:-15}},{l:'Sell it (+55 gold)',fx:{gold:55}}]},
  {t:'The Quiet Camp',d:'Abandoned bedrolls and a warm fire.',c:[
-  {l:'Rest (heal 35%)',fx:{healp:.35}},{l:'Scavenge (+50 gold)',fx:{gold:50}}]},
+  {l:'Rest (heal 35%)',fx:{healp:.35}},{l:'Scavenge (+30 gold)',fx:{gold:30}}]},
  {t:'The Whispering Well',d:'Something below offers you power.',c:[
   {l:'Drink (+60 xp, -10 HP each)',fx:{xp:60,hpall:-10}},{l:'Throw in a coin (-20 gold, +30 xp)',fx:{gold:-20,xp:30}},{l:'Walk on',fx:{}}]},
  {t:'Pilgrim Caravan',d:'Pilgrims offer aid to oathbreakers.',c:[
-  {l:'Trade for supplies (heal 20%, +25 gold)',fx:{healp:.2,gold:25}},{l:'Take their relic (random item, -20 gold)',fx:{item:1,gold:-20}}]}];
-const RANKUNL={3:'Unlocks every hero\'s 2nd subclass',4:'Unlocks the Ring slot',6:'Unlocks every hero\'s 3rd subclass',8:'Unlocks the Trinket slot',10:'+30 starting gold',12:'Start with a free Heirloom item'};
+  {l:'Trade for supplies (heal 20%, +15 gold)',fx:{healp:.2,gold:15}},{l:'Take their relic (random item, -20 gold)',fx:{item:1,gold:-20}}]}];
+const RANKUNL={3:'Unlocks every hero\'s 2nd subclass',4:'Unlocks the Ring slot',6:'Unlocks every hero\'s 3rd subclass',8:'Unlocks the Trinket slot',10:'+20 starting gold',12:'Start with a free Heirloom item'};
 const rankNeed=n=>80+45*n;
 function rankOf(xp){let r=1;xp=xp||0;while(r<15&&xp>=rankNeed(r)){xp-=rankNeed(r);r++;}return r;}
 function rankProg(xp){let r=1;xp=xp||0;while(r<15&&xp>=rankNeed(r)){xp-=rankNeed(r);r++;}return{r,cur:xp,need:r>=15?0:rankNeed(r)};}
 const subUnlock=(rk,i)=>i<=0||(i===1&&rk>=3)||(i>=2&&rk>=6);
 const slotOpen=(rk,s)=>s==='ring'?rk>=4:s==='trinket'?rk>=8:true;
 const META={
- grit:{n:'Grit',d:'+1 armor per rank',max:3,cost:[30,60,100]},
+ grit:{n:'Grit',d:'+1 armor per rank',max:2,cost:[40,90]},
  swift:{n:'Fleetfoot',d:'+1 move',max:1,cost:[120]},
- soulfire:{n:'Soulfire',d:'+1 ultimate charge per action per rank',max:3,cost:[25,50,90]},
- vit:{n:'Vitality',d:'+4% max HP per rank',max:5,cost:[15,25,40,60,90]},
- might:{n:'Might',d:'+4% attack per rank',max:5,cost:[15,25,40,60,90]},
- purse:{n:'Pilgrim\'s Purse',d:'+20 starting gold per rank',max:5,cost:[10,20,30,45,60]},
- lore:{n:'Lorekeeping',d:'+10% experience per rank',max:3,cost:[20,40,70]},
- ward:{n:'Oathward',d:'Start each fight with 6 shield per rank',max:4,cost:[20,35,55,80]},
- relic:{n:'Heirloom',d:'Start the run with an extra random item per rank',max:2,cost:[40,90]}};
+ soulfire:{n:'Soulfire',d:'+1 ultimate charge per action per rank',max:2,cost:[35,80]},
+ vit:{n:'Vitality',d:'+3% max HP per rank',max:5,cost:[15,25,40,60,90]},
+ might:{n:'Might',d:'+3% attack per rank',max:5,cost:[15,25,40,60,90]},
+ purse:{n:'Pilgrim\'s Purse',d:'+15 starting gold per rank',max:5,cost:[10,20,30,45,60]},
+ lore:{n:'Lorekeeping',d:'+8% experience per rank',max:3,cost:[20,40,70]},
+ ward:{n:'Oathward',d:'Start each fight with 4 shield per rank',max:4,cost:[25,45,70,100]},
+ relic:{n:'Heirloom',d:'Start the run with an extra random item',max:1,cost:[90]}};
 
 // --- class signature skills (learned on level-up, five skills max)
 A('oathaura','Oathward Aura',2,0,'self',{all:'allies',sh:.5,afx:[['guard',3,2],['bless',3,1]],d:'Aura: the whole party gains armor and a blessing.'});
@@ -635,27 +643,27 @@ function hmods(S,h){
   return l;
 }
 function hstat(S,h){
-  const c=CLS[h.cls], s=c.subs[h.sub], ml=hmods(S,h), m=h.m||{}, g=1+.07*(h.lv-1);
+  const c=CLS[h.cls], s=c.subs[h.sub], ml=hmods(S,h), m=h.m||{}, g=1+.05*(h.lv-1);
   return {
-    mhp:Math.max(10,Math.round((c.hp+s.hp+sum(ml,'hp')+h.hpb)*g*(1+.04*(m.vit||0)))),
-    atk:Math.max(1,Math.round((c.atk+s.atk+sum(ml,'atk')+h.atkb)*g*(1+.04*(m.might||0))*(1+sum(ml,'atkp')))),
+    mhp:Math.max(10,Math.round((c.hp+s.hp+Math.round(sum(ml,'hp')*.85)+h.hpb)*g*(1+.025*(m.vit||0)))),
+    atk:Math.max(1,Math.round((c.atk+s.atk+sum(ml,'atk')+h.atkb)*g*(1+.025*(m.might||0))*(1+sum(ml,'atkp')*.8))),
     armor:c.armor+s.armor+sum(ml,'armor')+(m.grit||0), mv:Math.max(1,c.mv+sum(ml,'mv')+(m.swift||0)),
-    gain:sum(ml,'gain')+(m.soulfire||0), thorns:sum(ml,'thorns'), steal:sum(ml,'steal'), sh:sum(ml,'sh')+6*(m.ward||0),
+    gain:sum(ml,'gain')+(m.soulfire||0), thorns:sum(ml,'thorns'), steal:sum(ml,'steal'), sh:sum(ml,'sh')+4*(m.ward||0),
     onhit:ml.filter(x=>x.onhit).map(x=>x.onhit)};
 }
 const startAbs=(cls,sub)=>[CLS[cls].abs[0],CLS[cls].subs[sub].abs[0],CLS[cls].ult];
 function mkHero(i,uid,cls,sub,name,meta){
   return {id:'h'+i,uid,cls,sub,name:name||CLS[cls].n,lv:1,xp:0,hp:1,items:{weapon:null,relic:null,charm:null,ring:null,trinket:null},bl:[],up:{},
-    abs:startAbs(cls,sub),hpb:0,atkb:0,pend:[],m:meta||{}};
+    abs:startAbs(cls,sub),hpb:0,atkb:0,pend:[],rr:2,bn:1,banned:[],m:meta||{}};
 }
 const xpNeed=lv=>28+16*lv;
 const randItem=(rar)=>{const ks=Object.keys(ITEMS).filter(k=>(ITEMS[k].rar||1)<=(rar||1)&&ITEMS[k].slot!=='ring'&&ITEMS[k].slot!=='trinket');return pick(ks);};
 
 function newRun(o){
-  const S={v:1,id:Math.random().toString(36).slice(2,8),code:o.code,host:o.host,mode:o.mode,diff:o.diff,phase:'map',act:0,step:0,depth:0,gold:60,arts:[],heroes:[],
+  const S={v:1,id:Math.random().toString(36).slice(2,8),code:o.code,host:o.host,mode:o.mode,diff:o.diff,phase:'map',act:0,step:0,depth:0,gold:40,arts:[],heroes:[],
     nodes:[],B:null,R:null,shop:null,evt:null,over:null,rev:1,log:[],ready:{},stats:{kills:0,bosses:0,fights:0}};
   o.pl.forEach((p,i)=>S.heroes.push(mkHero(i+1,p.uid,p.cls,p.sub,p.name,p.meta)));
-  S.gold+=20*Math.max(0,...o.pl.map(p=>(p.meta&&p.meta.purse)||0))+(Math.max(0,...o.pl.map(p=>(p.meta&&p.meta.rk)||1))>=10?30:0);
+  S.gold+=15*Math.max(0,...o.pl.map(p=>(p.meta&&p.meta.purse)||0))+(Math.max(0,...o.pl.map(p=>(p.meta&&p.meta.rk)||1))>=10?20:0);
   S.heroes.forEach(h=>{
     for(let k=0;k<((h.m&&h.m.relic)||0)+(((h.m&&h.m.rk)||1)>=12?1:0);k++){const it=ITEMS[randItem(1)];if(!h.items[it.slot])h.items[it.slot]=Object.keys(ITEMS).find(q=>ITEMS[q]===it);}
     h.hp=hstat(S,h).mhp;});
@@ -702,7 +710,7 @@ function freeNear(B,x,y,maxr){
 function mkHeroUnit(S,h,x,y){
   const st=hstat(S,h);
   return {id:h.id,team:'h',hid:h.id,type:h.cls,name:h.name,g:CLS[h.cls].g,col:CLS[h.cls].col,x,y,hp:Math.max(1,h.hp),mhp:st.mhp,
-    armor:st.armor,atk:st.atk,mv:st.mv,rng:1,st:{},sh:st.sh,ap:3,mvl:st.mv,ult:false,charge:0,dead:false,abs:h.abs.slice(),thorns:st.thorns,steal:st.steal,gain:st.gain,onhit:st.onhit};
+    armor:st.armor,atk:st.atk,mv:st.mv,rng:1,st:{},sh:st.sh,ap:3,mvl:st.mv,ult:false,charge:0,cd:{},dead:false,abs:h.abs.slice(),thorns:st.thorns,steal:st.steal,gain:st.gain,onhit:st.onhit};
 }
 function mkEnemy(S,type,x,y,id,affix){
   const d=EN[type]||BOSS[type], df=DIFF[S.diff], dep=S.mode==='arena'?S.wave:S.depth;
@@ -804,12 +812,14 @@ const abLvl=(S,u,id)=>{const h=S.heroes.find(x=>x.id===u.hid);return h?(h.up[id]
 function abRange(S,u,a){
   let r=a.r;if(r>0){if(abLvl(S,u,a.id)>=2)r++;if(S.B.trial==='fog'&&u.team==='h')r=Math.max(1,r-1);}return r;
 }
+const abCd=(S,u,a)=>a.cd?Math.max(1,a.cd-(abLvl(S,u,a.id)>=3?1:0)):0;
 function abCost(S,u,a){return Math.max(1,a.ap-(abLvl(S,u,a.id)>=3&&a.ap>=2&&!a.ult?1:0));}
 function abCheck(S,u,id,tx,ty){
   const B=S.B,a=AB[id];
   if(!a||u.dead||!u.abs.includes(id))return'Unknown ability';
   if(u.st.stun)return'Stunned';
   if(u.ap<abCost(S,u,a))return'Not enough AP';
+  if(u.cd&&u.cd[id]>0)return'Cooldown: '+u.cd[id]+' turn'+(u.cd[id]>1?'s':'');
   if(a.ult&&((u.charge||0)<50||u.ult))return u.ult?'Ultimate already used':'Need 50 charge';
   const r=abRange(S,u,a);
   if(a.t==='self')return null;
@@ -828,7 +838,7 @@ function pushUnit(B,from,t,n){
 function useAb(S,u,id,tx,ty){
   const err=abCheck(S,u,id,tx,ty);if(err)return{ok:false,why:err};
   const B=S.B,a=AB[id],l=abLvl(S,u,id),mult=1+.2*l;
-  u.ap-=abCost(S,u,a);if(a.ult){u.charge=Math.max(0,(u.charge||0)-50);u.ult=true;}
+  u.ap-=abCost(S,u,a);if(a.cd){(u.cd=u.cd||{})[id]=abCd(S,u,a);}if(a.ult){u.charge=Math.max(0,(u.charge||0)-50);u.ult=true;}
   const tgt=a.t==='foe'||a.t==='ally'?unitAt(B,tx,ty):null;
   const c=a.t==='tile'?{x:tx,y:ty}:a.t==='self'?{x:u.x,y:u.y}:{x:tgt.x,y:tgt.y};
   ev(B,{k:'c',id:u.id,n:a.n,x:c.x,y:c.y,ab:id});
@@ -1026,6 +1036,7 @@ function checkEnd(S){
 function beginHeroPhase(S){
   const B=S.B;B.ph='h';
   for(const u of B.units){if(u.dead)continue;
+    if(u.cd)for(const k in u.cd)if(u.cd[k]>0)u.cd[k]--;
     const ch=u.st.chill?2:0;u.mvl=Math.max(0,u.mv-ch);
     u.ap=u.team==='h'?(u.hid?3:0):1;
     if(u.hid&&u.st.haste)u.ap+=1;}
@@ -1063,29 +1074,32 @@ function resolveTurn(S,plans){
 /* ===== ENGINE 4: rewards, levels, run flow, commands ===== */
 function wpick(list){let t=list.reduce((s,x)=>s+x.w,0),r=Math.random()*t;for(const x of list){r-=x.w;if(r<=0)return x;}return list[0];}
 function levelCards(S,h){
-  const sub=CLS[h.cls].subs[h.sub],pool=[];
-  const open=h.abs.length<5&&(h.lv===3||h.lv===6||h.lv>=9&&h.abs.length<5),lrn=open?CLS[h.cls].abs.concat(sub.abs,CLS[h.cls].learn||[]).filter((a,i,ar)=>!h.abs.includes(a)&&ar.indexOf(a)===i):[];
-  lrn.forEach(a=>pool.push({t:'learn',id:a,w:6}));
-  h.abs.forEach(a=>{if((h.up[a]||0)<3)pool.push({t:'up',id:a,w:3});});
-  Object.keys(BLESS).filter(b=>!h.bl.includes(b)).forEach(b=>pool.push({t:'bless',id:b,w:1.6}));
-  const out=[];
-  if(lrn.length){const c=wpick(pool.filter(p=>p.t==='learn'));pool.splice(pool.indexOf(c),1);out.push({t:'learn',id:c.id});}
+  const sub=CLS[h.cls].subs[h.sub],pool=[],full=h.abs.length>=6;
+  const cand=CLS[h.cls].abs.concat(sub.abs,CLS[h.cls].learn||[]).filter((a,i,ar)=>!h.abs.includes(a)&&ar.indexOf(a)===i&&AB[a]&&!AB[a].ult&&!(h.banned||[]).includes(a));
+  h.abs.forEach(a=>{if(!AB[a].ult&&(h.up[a]||0)<3&&!(h.banned||[]).includes(a))pool.push({t:'up',id:a,w:3});});
+  Object.keys(BLESS).filter(b=>!h.bl.includes(b)&&!(h.banned||[]).includes(b)).forEach(b=>pool.push({t:'bless',id:b,w:1.6}));
+  const out=[],cs=shuffle(cand.slice());
+  if(cs.length){
+    if(!full){out.push({t:'learn',id:cs[0]});if(cs[1])out.push({t:'learn',id:cs[1]});}
+    else out.push({t:'swap',id:cs[0]});
+  }
   while(out.length<2&&pool.length){const c=wpick(pool);pool.splice(pool.indexOf(c),1);out.push({t:c.t,id:c.id});}
-  out.push(Math.random()<.5?{t:'hp'}:{t:'atk'});
+  if(out.length<3)out.push(Math.random()<.5?{t:'hp'}:{t:'atk'});
   return out;
 }
 function addXp(S,h,xp){
-  h.xp+=xp;
+  h.xp+=Math.round(xp*(1+.08*((h.m&&h.m.lore)||0)));
   while(h.xp>=xpNeed(h.lv)&&h.lv<12){
     h.xp-=xpNeed(h.lv);const old=hstat(S,h).mhp;h.lv++;h.hp+=hstat(S,h).mhp-old;
     h.pend.push({cards:levelCards(S,h)});
   }
 }
-function applyCard(S,h,c){
-  if(c.t==='learn'){if(!h.abs.includes(c.id)&&h.abs.length<5)h.abs.splice(h.abs.length-1,0,c.id);}
+function applyCard(S,h,c,rm){
+  if(c.t==='learn'){if(!h.abs.includes(c.id)&&h.abs.length<6)h.abs.splice(h.abs.length-1,0,c.id);}
+  else if(c.t==='swap'){if(!h.abs.includes(c.id)&&h.abs.length>=6&&rm&&h.abs.includes(rm)&&!AB[rm].ult){h.abs[h.abs.indexOf(rm)]=c.id;delete h.up[rm];}else return false;}
   else if(c.t==='up')h.up[c.id]=(h.up[c.id]||0)+1;
   else if(c.t==='bless')h.bl.push(c.id);
-  else if(c.t==='hp'){h.hpb+=8;h.hp+=8;}
+  else if(c.t==='hp'){h.hpb+=6;h.hp+=6;}
   else if(c.t==='atk')h.atkb+=1;
 }
 function victory(S){
@@ -1093,7 +1107,7 @@ function victory(S){
   const am=k=>S.arts.reduce((s,a)=>s+(ARTS[a].m[k]||0),0);
   const dep=S.mode==='arena'?S.wave:S.depth;
   const xp=Math.round(B.xp*(1+am('xp')));
-  const gold=Math.round((14+rnd(10)+dep*2)*(kind==='boss'?3:kind==='elite'?1.8:1.25)*df.gold*(1+am('gold')));
+  const gold=Math.round((9+rnd(7)+dep*1.5)*(kind==='boss'?2.5:kind==='elite'?1.5:.9)*df.gold*(1+am('gold')));
   S.gold+=gold;S.depth++;
   const R={xp,gold,kind,loot:{},arts:[],artTaken:null,ready:{}};
   for(const h of S.heroes){
@@ -1108,9 +1122,9 @@ function victory(S){
     for(const h of hs.slice(0,n)){
       const ids=Object.keys(ITEMS).filter(k=>(ITEMS[k].rar||1)<=rar&&slotOpen((h.m&&h.m.rk)||1,ITEMS[k].slot));
       R.loot[h.id]=shuffle(ids).slice(0,3);}}
-  if(kind!=='normal'||Math.random()<.12)R.arts=shuffle(Object.keys(ARTS).filter(a=>!S.arts.includes(a))).slice(0,3);
+  if(Math.random()<(kind==='boss'?.55:kind==='elite'?.3:.04))R.arts=shuffle(Object.keys(ARTS).filter(a=>!S.arts.includes(a))).slice(0,3);
   S.R=R;S.log.push('Victory. +'+gold+' gold, +'+xp+' xp.');
-  if(S.mode!=='arena'&&S.ex){S.ex.cleared=1;S.ex.portal=1;S.ex.x=+(S.ex.lx-3.2).toFixed(2);S.ex.z=S.ex.lz;S.phase='explore';S.log.push('A portal tears open where the foe fell.');}else S.phase='reward';
+  S.ex=null;S.phase='reward';
 }
 function calcShards(S){
   const base=S.mode==='arena'?S.wave*4:S.depth*3;
@@ -1120,8 +1134,8 @@ function defeat(S){S.B.done='lose';S.phase='over';S.over={win:false};S.over.shar
 function winRun(S){S.phase='over';S.over={win:true};S.over.shards=calcShards(S);S.log.push('The last god falls. The realm is yours.');}
 function genShop(S){
   const ids=Object.keys(ITEMS);
-  const items=shuffle(ids).slice(0,4).map(id=>({id,cost:Math.round(ITEMS[id].cost*(1+.04*S.depth))}));
-  const arts=shuffle(Object.keys(ARTS).filter(a=>!S.arts.includes(a))).slice(0,1).map(id=>({id,cost:110}));
+  const items=shuffle(ids).slice(0,4).map(id=>({id,cost:Math.round(ITEMS[id].cost*(1.15+.05*S.depth))}));
+  const arts=Math.random()<.4?shuffle(Object.keys(ARTS).filter(a=>!S.arts.includes(a))).slice(0,1).map(id=>({id,cost:150})):[];
   return {items,arts,healCost:35,sold:{}};
 }
 function advance(S,fromShop){
@@ -1184,12 +1198,12 @@ function applyCmd(S,uid,c){
   switch(c.type){
   case 'node':{
     if(S.phase!=='map'||!isHost(S,uid))return false;const n=S.nodes[c.i];if(!n)return false;if(S.map){S.map.prev=n.j;S.map.path[S.step]=n.j;}
-    if(n.k==='battle'||n.k==='elite'||n.k==='boss'){startBattle(S,n.k);beginExplore(S,n.k);}
+    if(n.k==='battle'||n.k==='elite'||n.k==='boss'){startBattle(S,n.k);S.ex=null;S.log.push(n.k==='boss'?'A great presence waits ahead.':'Steel is drawn. The fight begins.');}
     else if(n.k==='event'){S.evt={i:rnd(EVENTS.length)};S.phase='event';}
     else if(n.k==='rest')S.phase='rest';
     else if(n.k==='shop'){S.shop=genShop(S);S.phase='shop';}
     else if(n.k==='treasure'){
-      const R={xp:0,gold:30+rnd(30),kind:'treasure',loot:{},arts:shuffle(Object.keys(ARTS).filter(a=>!S.arts.includes(a))).slice(0,3),artTaken:null,ready:{}};
+      const R={xp:0,gold:15+rnd(20),kind:'treasure',loot:{},arts:Math.random()<.35?shuffle(Object.keys(ARTS).filter(a=>!S.arts.includes(a))).slice(0,3):[],artTaken:null,ready:{}};
       S.gold+=R.gold;for(const h of S.heroes)R.loot[h.id]=shuffle(Object.keys(ITEMS).filter(k=>slotOpen((h.m&&h.m.rk)||1,ITEMS[k].slot))).slice(0,3);S.R=R;S.phase='reward';}
     return true;}
   case 'xmove':{
@@ -1218,9 +1232,18 @@ function applyCmd(S,uid,c){
     return false;}
   case 'leave':{
     if(S.phase!=='shop'||!isHost(S,uid))return false;advance(S,S.mode==='arena');return true;}
+  case 'lvr':{
+    const h=H1(c.hid);if(!h||!owns(S,uid,h)||!h.pend.length||(h.rr||0)<1)return false;
+    h.rr--;h.pend[0].cards=levelCards(S,h);return true;}
+  case 'lvb':{
+    const h=H1(c.hid);if(!h||!owns(S,uid,h)||!h.pend.length||(h.bn||0)<1)return false;const cd=h.pend[0].cards[c.i];if(!cd||!cd.id)return false;
+    h.bn--;(h.banned=h.banned||[]).push(cd.id);h.pend[0].cards=levelCards(S,h);return true;}
+  case 'lvs':{
+    const h=H1(c.hid);if(!h||!owns(S,uid,h)||!h.pend.length)return false;
+    h.pend.shift();h.rr=(h.rr||0)+1;h.pend.forEach(p=>{p.cards=levelCards(S,h);});tryAdvance(S);return true;}
   case 'lvl':{
     const h=H1(c.hid);if(!h||!owns(S,uid,h)||!h.pend.length)return false;const card=h.pend[0].cards[c.i];if(!card)return false;
-    applyCard(S,h,card);h.pend.shift();tryAdvance(S);return true;}
+    if(applyCard(S,h,card,c.rm)===false)return false;h.pend.shift();h.pend.forEach(p=>{p.cards=levelCards(S,h);});tryAdvance(S);return true;}
   case 'claim':{
     if(S.phase!=='reward'||!S.R)return false;const h=H1(c.hid);if(!h||!owns(S,uid,h))return false;
     if(!S.R.loot[h.id]||!S.R.loot[h.id].includes(c.id))return false;giveItem(S,h,c.id);delete S.R.loot[h.id];return true;}
@@ -2892,14 +2915,15 @@ function exUi(){
 const PK={battle:'Skirmish',elite:'Elite hunt',event:'Strange encounter',rest:'Campfire',shop:'Peddler',treasure:'Hidden cache',boss:'Boss'};
 const PD={battle:'A pack of enemies bars the way.',elite:'A dangerous foe with a twisted gift. Better rewards.',event:'Something stirs. Choose how to meet it.',rest:'Heal the party or train.',shop:'Spend gold on items and relics.',treasure:'Free loot for everyone.'};
 function lvIcon(c){
-  if(c.t==='learn'||c.t==='up')return '<span class="lvico">'+abIcon(c.id,72)+'</span>';
+  if(c.t==='learn'||c.t==='up'||c.t==='swap')return '<span class="lvico">'+abIcon(c.id,72)+'</span>';
   const g=c.t==='hp'?'♥':c.t==='atk'?'⚔':'✦';const col=c.t==='hp'?'#d9604a':c.t==='atk'?'#e0b85a':'#9ad0e6';
   return '<span class="lvico" style="width:72px;height:72px;display:grid;place-items:center;font-size:44px;color:'+col+';border:2px solid '+col+';border-radius:6px;background:radial-gradient(circle,#2b2014,#120c07)">'+g+'</span>';}
 function cardText(c,h){
-  if(c.t==='learn')return['Learn: '+AB[c.id].n,AB[c.id].d+' ('+AB[c.id].ap+' AP)'];
-  if(c.t==='up'){const l=(h.up[c.id]||0)+1;return['Upgrade: '+AB[c.id].n+' '+l+'/3',['+20% power','+20% power, +1 range','+20% power, -1 AP cost (if 2+)'][l-1]];}
+  if(c.t==='learn')return['Learn: '+AB[c.id].n,AB[c.id].d+' ('+AB[c.id].ap+' AP'+(AB[c.id].cd?', CD '+AB[c.id].cd:'')+')'];
+  if(c.t==='swap')return['Swap in: '+AB[c.id].n,AB[c.id].d+' ('+AB[c.id].ap+' AP'+(AB[c.id].cd?', CD '+AB[c.id].cd:'')+'). Pick a skill to replace.'];
+  if(c.t==='up'){const l=(h.up[c.id]||0)+1;return['Upgrade: '+AB[c.id].n+' Lv '+(l+1)+'/4',['+20% power','+20% power, +1 range','+20% power, -1 AP cost (if 2+), -1 cooldown'][l-1]];}
   if(c.t==='bless')return[BLESS[c.id].n,BLESS[c.id].d];
-  if(c.t==='hp')return['Vigor','+8 max HP, healed now.'];
+  if(c.t==='hp')return['Vigor','+6 max HP, healed now.'];
   return['Edge','+1 attack.'];
 }
 const itemLine=id=>'<span class="irow">'+itemIcon(id,40)+'<span><b>'+esc(ITEMS[id].n)+'</b> <span class="dim">'+esc(ITEMS[id].slot)+' · '+esc(ITEMS[id].d)+'</span></span></span>';
@@ -2964,7 +2988,7 @@ function renderScreen(){
     h+='<div class="hstrip">'+S.heroes.map(hr=>{const c=CLS[hr.cls],mh=hstat(S,hr).mhp,need=xpNeed(hr.lv),pc=Math.min(100,Math.round(hr.xp/need*100));
       return '<div class="hs" style="--c:'+c.col+'"><div class="pg">'+c.g+'</div><div class="hsi"><b>'+esc(hr.name)+' <em>Lv '+hr.lv+'</em></b><div class="hsb hp"><i style="width:'+Math.round(hr.hp/mh*100)+'%"></i></div><div class="hsb xp"><i style="width:'+pc+'%"></i></div></div></div>';}).join('')+'</div>';
     for(const hero of lvHeroes){const c=CLS[hero.cls];
-      h+='<div class="panel rwp" style="--c:'+c.col+'"><div class="row sp"><h3>'+esc(hero.name)+' reaches Level '+hero.lv+'</h3><span class="note">'+esc(c.subs[hero.sub].n)+'</span></div><div class="lvbanner">★ LEVEL UP ★ Choose one of three'+(hero.pend.length>1?' ('+hero.pend.length+' pending)':'')+'</div><div class="grid g3">'+hero.pend[0].cards.map((cd,i)=>{const t=cardText(cd,hero);return '<button class="card lvc" data-lvl="'+hero.id+':'+i+'">'+lvIcon(cd)+'<span class="lvtag">'+({learn:'NEW SKILL',up:'UPGRADE',bless:'BLESSING',hp:'STAT',atk:'STAT'}[cd.t])+'</span><span class="ctitle">'+esc(t[0])+'</span><span class="dim">'+esc(t[1])+'</span></button>';}).join('')+'</div></div>';}
+      h+='<div class="panel rwp" style="--c:'+c.col+'"><div class="row sp"><h3>'+esc(hero.name)+' reaches Level '+hero.lv+'</h3><span class="note">'+esc(c.subs[hero.sub].n)+'</span></div><div class="lvbanner">★ LEVEL UP ★ Choose one of three'+(hero.pend.length>1?' ('+hero.pend.length+' pending)':'')+'</div>'+(App.swp&&App.swp.hid===hero.id&&hero.pend[0].cards[App.swp.i]?'<div class="note" style="margin:4px 0">Replace which skill with <b>'+esc(AB[hero.pend[0].cards[App.swp.i].id].n)+'</b>?</div><div class="grid g3">'+hero.abs.filter(a=>!AB[a].ult).map(a=>'<button class="card lvc" data-lvl="'+hero.id+':'+App.swp.i+':'+a+'"><span class="lvico">'+abIcon(a,56)+'</span><span class="ctitle">'+esc(AB[a].n)+((hero.up[a]||0)?' +'+hero.up[a]:'')+'</span><span class="dim">'+esc(AB[a].d)+'</span></button>').join('')+'</div><div class="row" style="margin-top:6px"><button class="btn sm" data-swc="1">Back</button></div>':'<div class="grid g3">'+hero.pend[0].cards.map((cd,i)=>{const t=cardText(cd,hero);return '<button class="card lvc" data-lvl="'+hero.id+':'+i+'">'+(cd.id&&(hero.bn||0)>0?'<span class="lvx" data-lvb="'+hero.id+':'+i+'" title="Banish">✕</span>':'')+lvIcon(cd)+'<span class="lvtag">'+({swap:'SWAP SKILL',learn:'NEW SKILL',up:'UPGRADE',bless:'BLESSING',hp:'STAT',atk:'STAT'}[cd.t])+'</span><span class="ctitle">'+esc(t[0])+'</span><span class="dim">'+esc(t[1])+'</span></button>';}).join('')+'</div><div class="row lvtools" style="margin-top:8px;gap:6px;flex-wrap:wrap"><button class="btn sm" data-lvr="'+hero.id+'"'+((hero.rr||0)<1?' disabled':'')+'>↻ Reroll ('+(hero.rr||0)+')</button><span class="note">Banish: tap ✕ on a card ('+(hero.bn||0)+' left)</span><button class="btn sm" data-lvs="'+hero.id+'">Skip (+1 reroll)</button></div>')+'</div>';}
     for(const hero of lootHeroes){const c=CLS[hero.cls];
       h+='<div class="panel rwp" style="--c:'+c.col+'"><div class="row sp"><h3>'+esc(hero.name)+' finds gear</h3><span class="note">Choose one, or skip it</span></div><div class="grid g3">'+R.loot[hero.id].map(id=>{const it=ITEMS[id],cur=hero.items[it.slot];return '<button class="card lootc" data-claim="'+hero.id+':'+id+'">'+itemIcon(id,58)+'<span class="lcn">'+esc(it.n)+'</span><span class="lct">'+esc(it.slot)+'</span><span class="dim">'+esc(it.d)+'</span>'+(cur?'<span class="note">Replaces '+esc(ITEMS[cur].n)+'</span>':'<span class="note up">Empty slot</span>')+'</button>';}).join('')+'</div><div class="row" style="margin-top:6px"><button class="btn sm" data-skip="'+hero.id+'">Leave it</button></div></div>';}
     if(R.arts.length)h+='<div class="panel rwp relicp"><div class="row sp"><h3>Party relic</h3><span class="note">Any player may take one</span></div><div class="grid g3">'+R.arts.map(a=>'<button class="card lootc" data-art="'+a+'">'+artIcon(a,58)+'<span class="lcn">'+esc(ARTS[a].n)+'</span><span class="lct">relic</span><span class="dim">'+esc(ARTS[a].d)+'</span></button>').join('')+'</div></div>';
@@ -2989,6 +3013,7 @@ function render(){
   if(!App.S){return;}App.ver++;show('game');
   {const S=App.S,ph=S.phase,bossB=ph==='battle'&&S.B&&S.B.units.some(x=>x.boss);
    if(ph!==Aud.lastPhase){if(Aud.lastPhase&&App.lastRunId===S.id&&['battle','explore','reward','map','rest','shop','event'].includes(ph)){const nm={battle:'Into the Fray',explore:S.ex&&S.ex.cleared?'The Foe Has Fallen':'The Field Awaits',reward:'Spoils of Battle',map:'The Road Onward',rest:'A Moment of Rest',shop:'A Peddler\'s Wagon',event:'Something Stirs'}[ph];Story.flash(nm,ph==='battle'&&S.B&&S.B.kind==='boss'?'A Warden stands before you':ph==='battle'&&S.B&&S.B.kind==='elite'?'An elite hunter':'');}App.lastRunId=S.id;if(ph==='reward')Aud.sfx('win');else if(ph==='over')Aud.sfx(S.over&&S.over.win?'win':'lose');Aud.lastPhase=ph;}
+   if(ph==='reward'&&S.heroes.some(x=>x.pend.length)&&App.lvFlash!==S.id+':'+S.depth+':'+S.heroes.reduce((s,x)=>s+x.lv,0)){App.lvFlash=S.id+':'+S.depth+':'+S.heroes.reduce((s,x)=>s+x.lv,0);try{Story.flash('★ LEVEL UP ★',S.heroes.filter(x=>x.pend.length).map(x=>x.name+' → Lv '+x.lv).join(' · '));toast('Level up! Choose your new skill.');Aud.sfx('win');}catch(e){}}
    Aud.setState(ph==='battle'?(bossB?'boss':'battle'):ph==='over'?(S.over&&S.over.win?'victory':'defeat'):'map',Math.min(S.act||0,2));}document.body.classList.add('ingame');packFab();renderHud();renderSide();renderScreen();Story.beat(App.S);
 }
 
@@ -3315,8 +3340,8 @@ function renderBar(){
   const L=App.locked;let h='<div class="bwrap" style="--c:'+CLS[hero.cls].col+'"><div class="apr"><div class="bpor"><div class="ring" style="--p:'+Math.max(0,u.hp/u.mhp*100)+'%"><div class="rin">'+CLS[hero.cls].g+'</div><span class="lvb">'+hero.lv+'</span></div></div><b class="bnm">'+esc((LORE[hero.cls]||{}).name||CLS[hero.cls].n)+'</b>'+[0,1,2,3].filter(k=>k<Math.max(3,u.ap)).map(k=>'<i class="apd '+(k<u.ap?'':'off')+'"></i>').join('')+'</div><div class="brow"><div class="bgrp">';
   h+='<button class="kb'+(App.mode==='move'?' sel':'')+'" data-m="move"'+(L||u.st.root||u.st.stun?' disabled':'')+'><kbd>M</kbd><b>Move</b><span>'+u.mvl+' tiles</span></button>';
   h+='<button class="kb" data-m="defend"'+(L||u.ap<1||u.st.stun?' disabled':'')+'><kbd>D</kbd><b>Defend</b><span>1 AP</span></button></div><div class="bgrp main">';
-  u.abs.forEach((id,i)=>{const a=AB[id],l=abLvl(v,u,id),cost=abCost(v,u,a),can=!L&&u.ap>=cost&&!u.st.stun&&(!a.ult||((u.charge||0)>=50&&!u.ult));
-    h+='<button class="kb ab'+(a.ult?' ult'+(can?' ready':''):'')+(App.mode===id?' sel':'')+'" data-m="'+id+'" data-d="'+esc(a.d+(a.r?' Range '+abRange(v,u,a)+'.':''))+'"'+(can?'':' disabled')+'><kbd>'+(KEYS[i]||'')+'</kbd>'+abIcon(id,40)+'<b>'+esc(a.n)+(l?' +'+l:'')+'</b><span>'+cost+' AP'+(a.ult?' · 50 charge':'')+'</span></button>';});
+  u.abs.forEach((id,i)=>{const a=AB[id],l=abLvl(v,u,id),cost=abCost(v,u,a),cdn=(u.cd&&u.cd[id])||0,can=!L&&!cdn&&u.ap>=cost&&!u.st.stun&&(!a.ult||((u.charge||0)>=50&&!u.ult));
+    h+='<button class="kb ab'+(a.ult?' ult'+(can?' ready':''):'')+(App.mode===id?' sel':'')+'" data-m="'+id+'" data-d="'+esc(a.d+(a.r?' Range '+abRange(v,u,a)+'.':'')+(a.cd?' Cooldown '+abCd(v,u,a)+'.':''))+'"'+(can?'':' disabled')+'><kbd>'+(KEYS[i]||'')+'</kbd>'+abIcon(id,40)+'<b>'+esc(a.n)+(l?' +'+l:'')+'</b><span>'+(cdn?'⏳ ready in '+cdn:cost+' AP'+(a.ult?' · 50 charge':'')+(a.cd?' · CD '+abCd(v,u,a):''))+'</span></button>';});
   h+='</div><div class="bgrp"><button class="kb" data-m="undo"'+(L||!(App.plan[hero.id]||[]).length?' disabled':'')+'><kbd>Z</kbd><b>Undo</b><span></span></button></div>';
   h+='</div><div class="vb"><div class="mvb"><i style="width:'+Math.max(0,Math.min(100,u.mvl/Math.max(1,u.mv)*100))+'%"></i><span>MOVEMENT: '+u.mvl+'</span></div><div class="hpb2"><i style="width:'+Math.max(0,u.hp/u.mhp*100)+'%"></i><span>HP '+Math.max(0,u.hp)+'/'+u.mhp+(u.sh?' +'+u.sh:'')+'</span></div></div></div>';
   $('bar').innerHTML=h;
@@ -3761,6 +3786,7 @@ function bindInput(){
   window.addEventListener('resize',()=>{if(Scene.ok)R.resize();});
   document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('[data-d]');if(b&&App.S&&App.S.phase==='battle')$('hint').textContent=b.dataset.d;});
   document.addEventListener('click',e=>{
+    const bx=e.target.closest('[data-lvb]');if(bx){e.stopPropagation();const [hid,i]=bx.dataset.lvb.split(':');App.swp=null;return send({type:'lvb',hid,i:+i});}
     const b=e.target.closest('button,input,[data-node]');if(!b)return;const d=b.dataset||{};
     if(d.h!==undefined&&false)return;
     if(b.id==='lock')return lockIn();
@@ -3780,7 +3806,10 @@ function bindInput(){
     if(d.sh){App.shopHero=d.sh;render();return;}
     if(d.buy){const [k,id]=d.buy.split(':');return send({type:'buy',kind:k,id,hid:App.shopHero});}
     if(d.leave)return send({type:'leave'});
-    if(d.lvl){const [hid,i]=d.lvl.split(':');return send({type:'lvl',hid,i:+i});}
+    if(d.lvr)return send({type:'lvr',hid:d.lvr});
+    if(d.lvs){App.swp=null;return send({type:'lvs',hid:d.lvs});}
+    if(d.swc){App.swp=null;render();return;}
+    if(d.lvl){const [hid,i,rm]=d.lvl.split(':');const hh=App.S.heroes.find(x=>x.id===hid),cd0=hh&&hh.pend[0]&&hh.pend[0].cards[+i];if(cd0&&cd0.t==='swap'&&!rm){App.swp={hid,i:+i};render();return;}App.swp=null;return send({type:'lvl',hid,i:+i,rm});}
     if(d.skip)return send({type:'skip',hid:d.skip});
     if(d.claim){const [hid,id]=d.claim.split(':');return send({type:'claim',hid,id});}
     if(d.art)return send({type:'art',id:d.art});
@@ -3884,7 +3913,7 @@ function infoPanel(p,who){
    '<p class="quote">'+esc(L.quote||'')+'</p><p class="dim bio">'+esc(L.bio||c.d)+'</p>'+
    '<div style="display:grid;gap:5px">'+statBar('Health',c.hp+s.hp,90)+statBar('Attack',c.atk+s.atk,16)+statBar('Armor',c.armor+s.armor,6)+statBar('Move',c.mv,5)+'</div>'+
    '<div class="fld"><span class="lbl">Subclass</span><div class="subs">'+Object.keys(c.subs).map((k,ix)=>{const q=c.subs[k],lk=!subUnlock(metaRank(),ix);return '<button class="subc'+(p.sub===k?' sel':'')+(lk?' lock':'')+'" data-psub="'+k+'" data-lk="'+(lk?(ix===1?3:6):0)+'">'+(lk?'<span class="lkb">🔒 Oath Rank '+(ix===1?3:6)+'</span>':'')+'<b>'+esc(q.n)+'</b><i>'+esc(SUBLORE[k]||'')+'</i><span class="dim">'+esc(q.d)+'</span><span class="chips">'+chip('HP',q.hp)+chip('ATK',q.atk)+chip('ARM',q.armor)+'</span><span class="chips">'+q.abs.map(a=>'<span class="chip ab">'+esc(AB[a].n)+'</span>').join('')+'</span></button>';}).join('')+'</div></div>'+
-   '<div class="fld"><span class="lbl">Starting skills (3 of 5 slots)</span>'+startAbs(p.cls,p.sub).map(a=>abLine(a,AB[a].ult)).join('')+'</div>'+
+   '<div class="fld"><span class="lbl">Starting skills (3 of 6 slots)</span>'+startAbs(p.cls,p.sub).map(a=>abLine(a,AB[a].ult)).join('')+'</div>'+
    '<div class="fld"><span class="lbl">Learn on level-up</span><div class="chips">'+c.abs.concat(s.abs).filter(a=>!startAbs(p.cls,p.sub).includes(a)).map(a=>'<span class="chip ab" title="'+esc(AB[a].d)+'">'+esc(AB[a].n)+'</span>').join('')+'</div></div></div>';
 }
 function renderRoom(){
