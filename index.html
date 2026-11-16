@@ -258,6 +258,7 @@ input,select{background:#1b130c;color:var(--ink);border:1px solid #8a6b44;border
  .pick .lt>.pa:last-child>.row .btn{width:150px!important;padding-inline:8px!important}
 }
 .lvbanner{font-family:var(--display);color:var(--gold);font-size:18px;text-align:center;letter-spacing:.08em;text-shadow:0 0 12px rgba(224,184,90,.6);margin:6px 0}
+.vhs{display:flex;gap:4px;justify-content:center;margin-top:6px;flex-wrap:wrap}.vh{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;border:2px solid var(--c,#d9a05a);background:#1a120a;color:var(--c,#d9a05a);font:700 13px Georgia,serif;box-shadow:0 0 6px var(--c,#000)}.votebar{margin:6px 0 10px;padding:6px 10px;border:1px dashed #6a5238;border-radius:6px;font-size:13px;color:#d9c9a0}
 .lvx{position:absolute;top:4px;right:6px;width:24px;height:24px;line-height:22px;text-align:center;border:1px solid #6a5238;border-radius:50%;background:#1a120a;color:#d9a05a;font-size:13px;cursor:pointer;z-index:2}.lvx:hover{background:#5a2a1a;color:#fff}.card.lvc{position:relative;justify-items:center;text-align:center;gap:7px;padding:14px 10px;min-height:190px}.lvc .lvico{filter:drop-shadow(0 0 10px rgba(224,184,90,.35))}
 .lvtag{font-size:10px;letter-spacing:.16em;color:#1b130c;background:var(--gold);padding:2px 8px;border-radius:2px;font-weight:700}
 .lvc:hover{transform:translateY(-4px);box-shadow:0 0 18px rgba(224,184,90,.45)}
@@ -452,8 +453,9 @@ const CDS={bash:3,hold:3,charge:3,aegis:2,rally:4,reap:3,rage:4,sunder:2,quake:3
  volley:2,snare:3,prey:3,dead:3,steady:3,hound:5,howl:4,thornwall:3,rootbind:4,quickdraw:3,killzone:4,
  wither:2,raise:4,siphon:2,soulfire:2,gchill:2,spear:2,horde:5,plague:3,pest:4,bloodpact:4,blight:3};
 for(const k in AB)AB[k].cd=AB[k].ult?0:(CDS[k]||0);
+const PIECE={knight:{n:'Knight',g:'♞',k:'n',d:'Leaps in an L, over anything. Each leap costs 2 movement.'},mage:{n:'Bishop',g:'♝',k:'b',d:'Moves on diagonals only.'},rogue:{n:'Queen',g:'♛',k:'q',d:'Moves any direction.'},cleric:{n:'Rook',g:'♜',k:'r',d:'Moves in straight lines only (no diagonals).'},ranger:{n:'Knight',g:'♞',k:'n',d:'Leaps in an L, over anything. Each leap costs 2 movement.'},necro:{n:'King',g:'♚',k:'k',d:'Steps one tile at a time in any direction.'}};
 const CLS={
- knight:{n:'Ironbound',role:'Vanguard',hp:70,atk:10,armor:2,mv:3,col:'#8fa3bf',g:'I',abs:['cleave','bash','hold','charge'],ult:'godbreaker',learn:['warcry','condemn'],
+ knight:{n:'Ironbound',role:'Vanguard',hp:70,atk:10,armor:2,mv:4,col:'#8fa3bf',g:'I',abs:['cleave','bash','hold','charge'],ult:'godbreaker',learn:['warcry','condemn'],
   d:'Oath-sworn frontliner who holds the line against the gods.',
   subs:{oathkeeper:{n:'Oathkeeper',d:'Guardian. Shields the party.',abs:['aegis','rally'],hp:10,armor:1,atk:0},
         doomblade:{n:'Doomblade',d:'Berserker. Executes the wounded.',abs:['reap','rage'],hp:0,armor:0,atk:2},
@@ -695,9 +697,17 @@ const key=(x,y)=>x+','+y;
 function unitAt(B,x,y){return B.units.find(u=>!u.dead&&u.x===x&&u.y===y);}
 function blocked(B,x,y){return x<0||y<0||x>=W||y>=H||B.obs.some(o=>o[0]===x&&o[1]===y)||!!unitAt(B,x,y);}
 function reach(B,u,mv){
+  const pk=u.hid&&typeof PIECE!=='undefined'&&PIECE[u.type]?PIECE[u.type].k:'k';
   const d=new Map([[key(u.x,u.y),0]]),q=[[u.x,u.y]];
+  if(pk==='n'){
+    const OF=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
+    while(q.length){const [x,y]=q.shift(),c=d.get(key(x,y));if(c+2>mv)continue;
+      for(const [dx,dy] of OF){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(d.has(k)||blocked(B,nx,ny))continue;d.set(k,c+2);q.push([nx,ny]);}}
+    return d;}
   while(q.length){const [x,y]=q.shift(),c=d.get(key(x,y));if(c>=mv)continue;
-    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy,k=key(nx,ny);
+    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){if(!dx&&!dy)continue;
+      if(pk==='b'&&(!dx||!dy))continue;if(pk==='r'&&dx&&dy)continue;
+      const nx=x+dx,ny=y+dy,k=key(nx,ny);
       if(d.has(k)||blocked(B,nx,ny))continue;d.set(k,c+1);q.push([nx,ny]);}}
   return d;
 }
@@ -904,6 +914,15 @@ function defend(S,u){
   const B=S.B;if(u.dead||u.st.stun||u.ap<1)return{ok:false,why:'Cannot defend'};
   u.ap-=1;addSt(B,u,'guard',1,3);u.sh+=Math.round(u.atk*.4);gainCharge(B,u,12);ev(B,{k:'t',id:u.id,s:'Guard'});return{ok:true};
 }
+function reviveUnit(S,u,tid){
+  const B=S.B;if(u.dead||u.st.stun)return{ok:false,why:'Cannot revive'};if(u.ap<2)return{ok:false,why:'Revive needs 2 AP'};
+  const t=B.units.find(x=>x.id===tid&&x.dead&&x.team==='h'&&x.hid);if(!t)return{ok:false,why:'No fallen ally there'};
+  if(cheb(u,t)>2)return{ok:false,why:'Too far to revive'};
+  const occ=unitAt(B,t.x,t.y);u.ap-=2;
+  t.dead=false;t.hp=Math.max(1,Math.round(t.mhp*.35));t.st={};t.sh=0;t.ap=0;t.mvl=0;
+  if(occ&&occ!==t){const p=freeNear(B,t.x,t.y,3);if(p){t.x=p[0];t.y=p[1];}}
+  ev(B,{k:'h',id:t.id,v:t.hp});ev(B,{k:'t',id:t.id,s:'Revived'});S.log.push(u.name+' revives '+t.name+'.');return{ok:true};
+}
 function moveUnit(S,u,x,y){
   const B=S.B;if(u.dead||u.st.stun||u.st.root)return{ok:false,why:u.st.root?'Rooted':'Cannot move'};
   const r=reach(B,u,u.mvl),d=r.get(key(x,y));
@@ -1063,6 +1082,7 @@ function resolveTurn(S,plans){
       if(a.a==='mv')r=moveUnit(S,u,a.x,a.y);
       else if(a.a==='ab')r=useAb(S,u,a.id,a.x,a.y);
       else if(a.a==='df')r=defend(S,u);
+      else if(a.a==='rv')r=reviveUnit(S,u,a.tid);
       if(r&&!r.ok)ev(B,{k:'t',id:u.id,s:r.why});
       if(checkEnd(S))return;
     }
@@ -1192,9 +1212,19 @@ function exMove(S,tx,tz){
     if(Math.hypot(px,pz)<1.5){l.got=1;if(l.t==='chest'){S.gold+=l.g;S.log.push('Found '+l.g+' gold.');}else{S.heroes.forEach(h=>{const m=hstat(S,h).mhp;h.hp=Math.min(m,h.hp+Math.round(m*.2));});S.log.push('A shrine mends the party.');}}}
   E.x=+nx.toFixed(2);E.z=+nz.toFixed(2);E.portal=Math.hypot(E.x-E.lx,E.z-E.lz)<E.rad?1:0;return true;
 }
+const VPH={node:'map',evt:'event',rest:'rest',leave:'shop'};
+const voteUids=S=>[...new Set(S.heroes.map(h=>h.uid))];
+function tallyVotes(S){const cnt={};for(const u in S.votes){const k=JSON.stringify(S.votes[u]);(cnt[k]=cnt[k]||{n:0,c:S.votes[u]}).n++;}
+  let best=0;for(const k in cnt)best=Math.max(best,cnt[k].n);const top=Object.values(cnt).filter(x=>x.n===best);return top[Math.floor(Math.random()*top.length)].c;}
 function applyCmd(S,uid,c){
   if(!c||!S||S.phase==='over')return false;
   const H1=id=>S.heroes.find(h=>h.id===id);
+  if(!S.solo&&VPH[c.type]&&!c._v&&S.phase===VPH[c.type]){
+    const us=voteUids(S);
+    if(us.length>1){if(!us.includes(uid))return false;S.votes=S.votes||{};const cc={};for(const k in c)cc[k]=c[k];S.votes[uid]=cc;
+      if(us.every(u=>S.votes[u])){const w=tallyVotes(S);S.votes={};return applyCmd(S,S.host,Object.assign({},w,{_v:1}))||true;}
+      return true;}}
+  if(c.type==='fvote'){if(S.solo||S.host!==uid||!S.votes||!Object.keys(S.votes).length)return false;const w=tallyVotes(S);S.votes={};return applyCmd(S,S.host,Object.assign({},w,{_v:1}));}
   switch(c.type){
   case 'node':{
     if(S.phase!=='map'||!isHost(S,uid))return false;const n=S.nodes[c.i];if(!n)return false;if(S.map){S.map.prev=n.j;S.map.path[S.step]=n.j;}
@@ -2631,6 +2661,7 @@ function layerColors(S){
   if(App.danger){const k=App.ver+':'+B.turn+':'+B.units.map(u=>u.x+u.y+(u.dead?'d':'')).join('');if(Scene.dKey!==k){Scene.dKey=k;Scene.dSet=dangerSet(B);}
     for(const kk of Scene.dSet.keys()){const [x,y]=kk.split(',').map(Number);put(x,y,[.7,.2,.15,.16]);}}
   if(su&&App.S.phase==='battle'&&!App.locked){
+    if(App.mode==='revive'){for(const x of B.units){if(x.dead&&x.team==='h'&&x.hid&&cheb(su,x)<=2)put(x.x,x.y,[.4,1,.6,.4]);}}
     if(App.mode==='move'&&!su.st.root){const r=reach(B,su,su.mvl);for(const [kk,d] of r){if(!d)continue;const [x,y]=kk.split(',').map(Number);put(x,y,[.35,.6,.8,.27]);}}
     else if(AB[App.mode]){const a=AB[App.mode];for(const t of rangeTiles(S,su,a))put(t[0],t[1],[.95,.8,.4,.2]);
       const h=App.hover;if(h&&!abCheck(S,su,a.id,h.x,h.y)){const ctr=a.t==='self'?su:h;
@@ -2944,9 +2975,12 @@ function heroCard(h,B){
   if(h.pend.length&&mine)s+='<div class="gold note">Level-up waiting</div>';
   s+='</div>';return s;
 }
+function vheads(S,fn){let o='';for(const u in (S.votes||{})){if(!fn(S.votes[u]))continue;const h=S.heroes.find(x=>x.uid===u);if(h)o+='<span class="vh" style="--c:'+CLS[h.cls].col+'" title="'+esc(h.name)+'">'+CLS[h.cls].g+'</span>';}return o?'<span class="vhs">'+o+'</span>':'';}
+function voteNote(S,host){if(App.solo)return'';const us=[...new Set(S.heroes.map(h=>h.uid))];if(us.length<2)return'';const v=S.votes||{},w=us.filter(u=>!v[u]).map(u=>pname(u));
+  return '<div class="votebar">🗳 Everyone votes, majority wins (ties are random).'+(w.length&&Object.keys(v).length?' Waiting for '+w.map(esc).join(', ')+'.':'')+(host&&Object.keys(v).length?' <button class="btn sm" data-fv="1">Resolve now</button>':'')+'</div>';}
 function nodeCard(n,i,can){
   const t=n.k==='boss'?BOSS[ACTS[Math.min(App.S.act,2)].boss]:null;
-  return '<button class="card mapnode" data-node="'+i+'"'+(can?'':' disabled')+'><span class="ctitle">'+esc(t?t.n:PK[n.k])+'</span><span class="dim">'+esc(t?t.d:PD[n.k])+'</span></button>';
+  return '<button class="card mapnode" data-node="'+i+'"'+(can?'':' disabled')+'><span class="ctitle">'+esc(t?t.n:PK[n.k])+'</span><span class="dim">'+esc(t?t.d:PD[n.k])+'</span>'+vheads(App.S,c=>c.type==='node'&&c.i===i)+'</button>';
 }
 const NCOL={battle:'#c4503a',elite:'#e0884a',event:'#7fb2ff',rest:'#9ccc82',shop:'#d6ad52',treasure:'#f0d98c',boss:'#cf5a43'};
 function nodeIcon(k,c){
@@ -2965,13 +2999,13 @@ function renderScreen(){
   const host=App.solo||S.host===App.uid;let h='';
   if(S.phase==='map'){
     const act=ACTS[Math.min(S.act,2)];
-    h+='<div class="mapwrap"><div class="mapttl"><h2>Act '+['I','II','III'][Math.min(S.act,2)]+' · '+esc(act.n)+'</h2><span class="note">Step '+(S.step+1)+' of 7 · '+(host?'Pick where the party goes next.':'The run host picks the path. Talk it over.')+'</span></div>'+mapSvg(S,host)+
+    h+='<div class="mapwrap"><div class="mapttl"><h2>Act '+['I','II','III'][Math.min(S.act,2)]+' · '+esc(act.n)+'</h2><span class="note">Step '+(S.step+1)+' of 7 · '+'Pick where the party goes next.'+'</span></div>'+voteNote(S,host)+mapSvg(S,true)+
       '<div class="legend">'+['battle','elite','event','rest','shop','treasure','boss'].map(k=>'<span><b style="color:'+NCOL[k]+'">●</b> '+esc((typeof PK!=='undefined'&&PK[k])||k)+'</span>').join('')+'</div></div>'+
-      '<div class="grid g3" style="margin-top:12px">'+S.nodes.map((n,i)=>nodeCard(n,i,host)).join('')+'</div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
+      '<div class="grid g3" style="margin-top:12px">'+S.nodes.map((n,i)=>nodeCard(n,i,true)).join('')+'</div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
   } else if(S.phase==='event'){
-    const e=EVENTS[S.evt.i];h+='<div class="panel grid"><h2>'+esc(e.t)+'</h2><p>'+esc(e.d)+'</p><div class="grid g3">'+e.c.map((c,i)=>'<button class="card" data-evt="'+i+'"'+(host?'':' disabled')+'>'+esc(c.l)+'</button>').join('')+'</div></div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
+    const e=EVENTS[S.evt.i];h+='<div class="panel grid"><h2>'+esc(e.t)+'</h2><p>'+esc(e.d)+'</p>'+voteNote(S,host)+'<div class="grid g3">'+e.c.map((c,i)=>'<button class="card" data-evt="'+i+'">'+esc(c.l)+vheads(S,v=>v.type==='evt'&&v.i===i)+'</button>').join('')+'</div></div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
   } else if(S.phase==='rest'){
-    h+='<div class="panel grid"><h2>Campfire</h2><div class="grid g3"><button class="card" data-rest="heal"'+(host?'':' disabled')+'><span class="ctitle">Rest</span><span class="dim">Heal 40% of max HP.</span></button><button class="card" data-rest="train"'+(host?'':' disabled')+'><span class="ctitle">Train</span><span class="dim">Everyone gains 50 xp.</span></button></div></div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
+    h+='<div class="panel grid"><h2>Campfire</h2>'+voteNote(S,host)+'<div class="grid g3"><button class="card" data-rest="heal"><span class="ctitle">Rest</span><span class="dim">Heal 40% of max HP.</span>'+vheads(S,v=>v.type==='rest'&&v.c==='heal')+'</button><button class="card" data-rest="train"><span class="ctitle">Train</span><span class="dim">Everyone gains 50 xp.</span>'+vheads(S,v=>v.type==='rest'&&v.c==='train')+'</button></div></div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
   } else if(S.phase==='shop'){
     const sh=S.shop,mine=myHeroes();if(!App.shopHero||!mine.some(x=>x.id===App.shopHero))App.shopHero=mine[0]&&mine[0].id;
     h+='<div class="panel grid"><div class="row sp"><h2>The Peddler</h2><span class="gold">Gold '+S.gold+'</span></div>';
@@ -2979,7 +3013,7 @@ function renderScreen(){
     for(const o of sh.items){const sold=sh.sold[o.id];h+='<button class="card" data-buy="item:'+o.id+'"'+(sold||S.gold<o.cost?' disabled':'')+'>'+itemLine(o.id)+'<span class="gold">'+(sold?'Sold':o.cost+' gold')+'</span></button>';}
     for(const o of sh.arts){const sold=sh.sold[o.id];h+='<button class="card" data-buy="art:'+o.id+'"'+(sold||S.gold<o.cost?' disabled':'')+'><b>'+esc(ARTS[o.id].n)+'</b><span class="dim">Party relic · '+esc(ARTS[o.id].d)+'</span><span class="gold">'+(sold?'Sold':o.cost+' gold')+'</span></button>';}
     h+='<button class="card" data-buy="heal:x"'+(S.gold<sh.healCost?' disabled':'')+'><b>Field medic</b><span class="dim">Heal everyone 30%.</span><span class="gold">'+sh.healCost+' gold</span></button></div>';
-    h+='<div class="row"><button class="btn primary" data-leave="1"'+(host?'':' disabled')+'>Leave the shop</button>'+(host?'':'<span class="note">Host decides when to leave.</span>')+'</div></div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
+    h+='<div class="row"><button class="btn primary" data-leave="1">Leave the shop</button>'+vheads(S,v=>v.type==='leave')+'</div>'+voteNote(S,host)+'</div><h3 style="margin:14px 0 8px">Party</h3>'+partyStrip();
   } else if(S.phase==='reward'){
     const R=S.R,mine=myHeroes(),title=R.kind==='treasure'?'Hidden Cache':R.kind==='event'?'Aftermath':R.kind==='boss'?'A God Falls':R.kind==='elite'?'Elite Slain':'Victory';
     const lootHeroes=mine.filter(x=>!x.pend.length&&R.loot[x.id]),lvHeroes=mine.filter(x=>x.pend.length);
@@ -3293,6 +3327,7 @@ function mapSvg(S,can){
     if(rc)svg+='<circle r="'+(boss?52:40)+'" fill="url(#gl)" class="pulse"/>';
     svg+='<g'+(vis?' style="filter:saturate(.4)"':'')+'>'+bld(n.k,vis)+'</g>';
     svg+='<text y="'+(boss?44:31)+'" text-anchor="middle" font-size="'+(boss?16:12.5)+'" font-style="italic" font-family="'+(boss?'Uncial Antiqua,serif':'Georgia,serif')+'" fill="'+INK+'" stroke="#e7d3a0" stroke-width="3" paint-order="stroke">'+esc(nm)+'</text>';
+    if(ri!==undefined){let k=0;for(const u in (S.votes||{})){const c=S.votes[u];if(c.type==='node'&&c.i===ri){const h=S.heroes.find(x=>x.uid===u);if(h){svg+='<g transform="translate('+(-18+k*22)+' -50)"><circle r="10" fill="#1a120a" stroke="'+CLS[h.cls].col+'" stroke-width="2"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="700" fill="'+CLS[h.cls].col+'">'+CLS[h.cls].g+'</text></g>';k++;}}}}
     if(vis)svg+='<g transform="translate(22 -24)"><circle r="9" fill="#8a2a1a" stroke="#4a1208" stroke-width="1.5"/><path d="M-4 0l3 3l6 -6" stroke="#f1d9a0" stroke-width="2" fill="none"/></g>';
     svg+='</g>';});
   return svg+'</svg>';
@@ -3338,8 +3373,8 @@ function renderBar(){
   const S=App.S,v=view(),B=v.B,hero=S.heroes.find(x=>x.id===App.sel),u=hero&&B.units.find(x=>x.id===hero.id),mine=hero&&(App.solo||hero.uid===App.uid);
   if(!hero||!u||!mine||u.dead){$('bar').innerHTML=hero&&!mine?'<div class="note">'+esc(hero.name)+' is controlled by '+esc(pname(hero.uid))+'.</div>':'<div class="note">Select one of your heroes.</div>';return;}
   const L=App.locked;let h='<div class="bwrap" style="--c:'+CLS[hero.cls].col+'"><div class="apr"><div class="bpor"><div class="ring" style="--p:'+Math.max(0,u.hp/u.mhp*100)+'%"><div class="rin">'+CLS[hero.cls].g+'</div><span class="lvb">'+hero.lv+'</span></div></div><b class="bnm">'+esc((LORE[hero.cls]||{}).name||CLS[hero.cls].n)+'</b>'+[0,1,2,3].filter(k=>k<Math.max(3,u.ap)).map(k=>'<i class="apd '+(k<u.ap?'':'off')+'"></i>').join('')+'</div><div class="brow"><div class="bgrp">';
-  h+='<button class="kb'+(App.mode==='move'?' sel':'')+'" data-m="move"'+(L||u.st.root||u.st.stun?' disabled':'')+'><kbd>M</kbd><b>Move</b><span>'+u.mvl+' tiles</span></button>';
-  h+='<button class="kb" data-m="defend"'+(L||u.ap<1||u.st.stun?' disabled':'')+'><kbd>D</kbd><b>Defend</b><span>1 AP</span></button></div><div class="bgrp main">';
+  h+='<button class="kb'+(App.mode==='move'?' sel':'')+'" data-m="move"'+(L||u.st.root||u.st.stun?' disabled':'')+'><kbd>M</kbd><b>'+((PIECE[hero.cls]||{}).g||'')+' Move</b><span>'+(((PIECE[hero.cls]||{}).k==='n')?Math.floor(u.mvl/2)+' leaps':u.mvl+' tiles')+' · '+((PIECE[hero.cls]||{}).n||'')+'</span></button>';
+  h+='<button class="kb" data-m="defend"'+(L||u.ap<1||u.st.stun?' disabled':'')+'><kbd>D</kbd><b>Defend</b><span>1 AP</span></button>'+(v.B.units.some(x=>x.dead&&x.team==='h'&&x.hid)?'<button class="kb'+(App.mode==='revive'?' sel':'')+'" data-m="revive" data-d="Revive a fallen ally within 2 tiles: costs 2 AP, they return at 35% HP but cannot act this turn."'+(L||u.ap<2||u.st.stun?' disabled':'')+'><b>✚ Revive</b><span>2 AP</span></button>':'')+'</div><div class="bgrp main">';
   u.abs.forEach((id,i)=>{const a=AB[id],l=abLvl(v,u,id),cost=abCost(v,u,a),cdn=(u.cd&&u.cd[id])||0,can=!L&&!cdn&&u.ap>=cost&&!u.st.stun&&(!a.ult||((u.charge||0)>=50&&!u.ult));
     h+='<button class="kb ab'+(a.ult?' ult'+(can?' ready':''):'')+(App.mode===id?' sel':'')+'" data-m="'+id+'" data-d="'+esc(a.d+(a.r?' Range '+abRange(v,u,a)+'.':'')+(a.cd?' Cooldown '+abCd(v,u,a)+'.':''))+'"'+(can?'':' disabled')+'><kbd>'+(KEYS[i]||'')+'</kbd>'+abIcon(id,40)+'<b>'+esc(a.n)+(l?' +'+l:'')+'</b><span>'+(cdn?'⏳ ready in '+cdn:cost+' AP'+(a.ult?' · 50 charge':'')+(a.cd?' · CD '+abCd(v,u,a):''))+'</span></button>';});
   h+='</div><div class="bgrp"><button class="kb" data-m="undo"'+(L||!(App.plan[hero.id]||[]).length?' disabled':'')+'><kbd>Z</kbd><b>Undo</b><span></span></button></div>';
@@ -3733,10 +3768,11 @@ function addAction(act){
   let r,n0=0;
   if(act.a==='mv')r=moveUnit(t,u,act.x,act.y);
   else if(act.a==='ab'){const e=abCheck(t,u,act.id,act.x,act.y);n0=(t.B.ev||[]).length;r=e?{ok:false,why:e}:useAb(t,u,act.id,act.x,act.y);}
+  else if(act.a==='rv')r=reviveUnit(t,u,act.tid);
   else r=defend(t,u);
   if(!r.ok){toast(r.why);return;}
   (App.plan[hero.id]=App.plan[hero.id]||[]).push(act);
-  if(act.a==='ab'||act.a==='df')App.mode='move';
+  if(act.a==='ab'||act.a==='df'||act.a==='rv')App.mode='move';
   rebuildSim();render();
   if(act.a==='ab'){try{previewEvents((t.B.ev||[]).slice(n0).filter(e=>e.k==='c'));}catch(x){}}
 }
@@ -3778,6 +3814,7 @@ function bindInput(){
     const S=App.S;if(S&&S.phase==='explore'&&Scene.ok){const p=rel(e);exClick(p[0],p[1]);return;}
     if(!S||S.phase!=='battle'||!Scene.ok)return;const p=rel(e),t=pickTile(p[0],p[1]);if(!t)return;App.hover=t;
     const v=view(),u=unitAt(v.B,t.x,t.y);
+    if(App.mode==='revive'){const dt=v.B.units.find(x=>x.dead&&x.team==='h'&&x.hid&&x.x===t.x&&x.y===t.y);if(dt)addAction({a:'rv',tid:dt.id});else toast('Tap a fallen ally');return;}
     if(AB[App.mode]){addAction({a:'ab',id:App.mode,x:t.x,y:t.y});return;}
     if(u&&u.team==='h'&&u.hid){const h=S.heroes.find(x=>x.id===u.id);if(h){App.sel=u.id;render();return;}}
     if(App.mode==='move'&&App.sel)addAction({a:'mv',x:t.x,y:t.y});
@@ -3806,6 +3843,7 @@ function bindInput(){
     if(d.sh){App.shopHero=d.sh;render();return;}
     if(d.buy){const [k,id]=d.buy.split(':');return send({type:'buy',kind:k,id,hid:App.shopHero});}
     if(d.leave)return send({type:'leave'});
+    if(d.fv)return send({type:'fvote'});
     if(d.lvr)return send({type:'lvr',hid:d.lvr});
     if(d.lvs){App.swp=null;return send({type:'lvs',hid:d.lvs});}
     if(d.swc){App.swp=null;render();return;}
