@@ -1334,6 +1334,10 @@ const Save={
   hasRun(){return !!this.peek();},
   load(){const r=this.peek();if(r)r.solo=true;return r;},
   clearRun(){try{localStorage.removeItem(this.KEY);}catch(e){}},
+  CK:'oathless_coop',
+  coopSave(S,names){try{if(!S||S.solo)return;if(S.phase==='over'){localStorage.removeItem(this.CK);return;}const d=clone(S);delete d.ev;delete d.votes;localStorage.setItem(this.CK,JSON.stringify({S:d,names:names||{},at:Date.now()}));}catch(e){}},
+  coopPeek(){try{const r=JSON.parse(localStorage.getItem(this.CK)||'null');return r&&r.S&&r.S.heroes&&r.S.phase!=='over'?r:null;}catch(e){return null;}},
+  coopClear(){try{localStorage.removeItem(this.CK);}catch(e){}},
   exportCode(){const o={v:1,meta:App.meta,name:App.name,set:App.set};try{return 'OATH1.'+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}catch(e){return '';}},
   importCode(t){
     try{t=String(t||'').trim();const i=t.indexOf('OATH1.');if(i<0)return'That does not look like an Oathless save code.';
@@ -3681,6 +3685,7 @@ const Net={db:null,room:null,user:null,run:null,runRef:null,plRef:null,me:null,u
     if(!snap.exists)return;const d=snap.data();this.run=d;App.runMeta={mode:d.mode,diff:d.diff,host:d.host,status:d.status};
     if(d.status==='run'&&d.S){
       const S=d.S;S.solo=false;
+      {const nm={};for(const u in App.players)nm[u]=(App.players[u]||{}).name||'';Save.coopSave(S,nm);}
       if(!App.S||App.S.id!==S.id||App.S.rev!==S.rev||App.S.phase!==S.phase){
         const fresh=!App.S||App.S.id!==S.id;App.S=S;App.rev=S.rev;App.plan={};App.locked=false;
         if(!App.sel||!S.heroes.some(h=>h.id===App.sel)){const m=myHeroes()[0];App.sel=m?m.id:null;}
@@ -3712,6 +3717,21 @@ const Net={db:null,room:null,user:null,run:null,runRef:null,plRef:null,me:null,u
     const S=newRun({code:App.code,host:App.uid,mode:this.run.mode,diff:this.run.diff,pl});S.solo=false;
     await this.saveRun(S,'run');
   },
+  /* resume a saved co-op run: remap heroes to whoever is in the lobby (by id, then by name; leftovers go to the host) */
+  async resumeRun(){
+    const sv=Save.coopPeek();if(!sv)return'No saved co-op run.';
+    const S=clone(sv.S),here=Object.keys(App.players),used={};
+    const owners=[...new Set(S.heroes.map(h=>h.uid))],map={};
+    for(const o of owners)if(here.includes(o)){map[o]=o;used[o]=1;}
+    for(const o of owners)if(!map[o]){const nm=(sv.names||{})[o];const m=nm&&here.find(u=>!used[u]&&(App.players[u]||{}).name===nm);if(m){map[o]=m;used[m]=1;}}
+    for(const o of owners)if(!map[o])map[o]=App.uid;
+    S.heroes.forEach(h=>{h.uid=map[h.uid];});
+    S.host=App.uid;S.code=App.code;S.solo=false;S.votes={};S.rev=(S.rev||0)+1;
+    S.ready={};if(S.R)S.R.ready={};
+    await this.saveRun(S,'run');return null;
+  },
+  coopMissing(){const sv=Save.coopPeek();if(!sv)return[];const here=Object.keys(App.players),nms=Object.values(App.players).map(p=>p.name);
+    return [...new Set(sv.S.heroes.map(h=>h.uid))].filter(o=>!here.includes(o)&&!nms.includes((sv.names||{})[o])).map(o=>(sv.names||{})[o]||'a player');},
   backToLobby(){return this.saveRun(null,'lobby');},
   leaderTick(){
     if(!this.isHost()||!App.S||this.busy){if(this.busy)this.again=true;return;}
@@ -3884,6 +3904,7 @@ function menuSheet(v){
      '<div class="fld"><label for="code">Room code</label><input id="code" maxlength="4" placeholder="ABCD" style="width:140px;font-size:24px;letter-spacing:.3em;text-transform:uppercase" value="'+esc((location.hash||'').replace('#','').slice(0,4).toUpperCase())+'"></div>'+
      '<button class="btn primary big" id="bJoin"'+(App.canCoop?'':' disabled')+'>Join room</button><div id="msg" class="note">'+(App.canCoop?'Ask the host for their four-letter code.':'This browser cannot do peer connections.')+'</div>'+
      '<details class="fld"><summary class="note">No luck? Join with an invite code instead</summary><div class="fld"><label for="inv">Invite code from your host</label><textarea id="inv" rows="3" style="width:100%"></textarea></div><button class="btn" id="bInv">Accept invite</button><div id="ansbox" hidden><label class="lbl" for="ans">Your reply: send this to the host</label><textarea id="ans" rows="3" readonly style="width:100%"></textarea><button class="btn sm" id="acopy">Copy</button></div><div id="imsg" class="note"></div></details></div>';
+  if(v==='rescoop'){const r=Save.coopPeek();return '<div class="sheet pa" style="position:relative">'+sheetBtns()+'<h2>Resume co-op run</h2>'+(r?'<p class="dim">Act '+(r.S.act+1)+' · Step '+(r.S.step+1)+' · '+r.S.heroes.map(h=>esc(CLS[h.cls].n)+' Lv '+h.lv).join(', ')+' · '+r.S.gold+' gold</p><div class="fld"><label for="nm">Your name</label><input id="nm" maxlength="16" value="'+esc(App.name)+'"></div><p class="note">You become the host. Everyone else joins with your new room code (use the same name and browser as before so they get their own hero back). Anyone missing is played by you.</p><div class="row"><button class="btn primary big" id="bResC"'+(App.canCoop?'':' disabled')+'>Host and resume</button><button class="btn" id="bDropC">Delete save</button></div><div id="msg" class="note"></div>':'<p class="dim">No saved co-op run.</p>')+'</div>';}
   if(v==='cont'){const r=Save.peek();return '<div class="sheet pa" style="position:relative">'+sheetBtns()+'<h2>Continue your run</h2>'+(r?'<p class="dim">Act '+(r.act+1)+' · Step '+(r.step+1)+' · '+r.heroes.map(h=>esc(CLS[h.cls].n)+' Lv '+h.lv).join(', ')+' · '+r.gold+' gold</p><div class="row"><button class="btn primary big" id="bCont">Resume</button><button class="btn" id="bDrop">Abandon run</button></div>':'<p class="dim">No saved run.</p>')+'</div>';}
   if(v==='profile'){const code=Save.exportCode();return '<div class="sheet pa" style="position:relative">'+sheetBtns()+'<h2>Profile &amp; Save</h2><p class="dim">Your progress (soul shards, upgrades, name, settings) is saved in this browser automatically. To keep it safe or move to another device, copy your save code or download the file, then import it wherever you play.</p>'+
      '<div class="fld"><label for="scode">Your save code</label><textarea id="scode" readonly rows="3" style="width:100%;font:12px monospace">'+esc(code)+'</textarea><div class="row"><button class="btn" id="bCopy">Copy code</button><button class="btn" id="bDown">Download save file</button></div></div>'+
@@ -3909,7 +3930,7 @@ function renderMenu(){
   const m=$('menu'),v=App.menuView||'main';setBg(CLSIDS,0,'title');
   const b=(k,t,s,dis)=>'<button class="mbtn pa'+(v===k?' on':'')+'" data-mv="'+k+'"'+(dis?' disabled':'')+'>'+t+(s?'<small>'+s+'</small>':'')+'</button>';
   m.innerHTML='<div class="title"><div><div class="logo">OATH<i>LESS</i></div><div class="tag2">Co-op tactical roguelite · 1–4 players</div><div class="mlist">'+
-    (Save.hasRun()?b('cont','Continue Run','Pick up your saved solo run'):'')+b('solo','Play Solo','Lead three heroes')+b('host','Host Co-op','Up to four players',!App.canCoop)+b('join','Join a Friend','Enter a room code',!App.canCoop)+b('shards','Soul Shards','<span class="gold">'+App.meta.shards+'</span> to spend · permanent upgrades')+b('profile','Profile & Save','Back up or move your progress')+b('settings','Settings')+b('how','How to Play')+
+    (Save.hasRun()?b('cont','Continue Run','Pick up your saved solo run'):'')+(Save.coopPeek()?b('rescoop','Resume Co-op','Host your saved co-op run',!App.canCoop):'')+b('solo','Play Solo','Lead three heroes')+b('host','Host Co-op','Up to four players',!App.canCoop)+b('join','Join a Friend','Enter a room code',!App.canCoop)+b('shards','Soul Shards','<span class="gold">'+App.meta.shards+'</span> to spend · permanent upgrades')+b('profile','Profile & Save','Back up or move your progress')+b('settings','Settings')+b('how','How to Play')+
     '</div></div><div style="display:grid;align-content:center;min-height:70vh">'+menuSheet(v)+'</div></div><div class="foot">Original dark-fantasy tactics. Drag the scene to look around.</div>';
   m.querySelectorAll('[data-mv]').forEach(x=>x.onclick=()=>{App.menuView=App.menuView===x.dataset.mv&&x.classList.contains('mbtn')?'main':x.dataset.mv;renderMenu();});
   m.querySelectorAll('[data-pm]').forEach(x=>x.onclick=()=>{keepName();App.pickMode=x.dataset.pm;renderMenu();});
@@ -3934,6 +3955,8 @@ function renderMenu(){
   if($('bImp'))$('bImp').onclick=()=>doImp($('icode').value);
   if($('fImp'))$('fImp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>doImp(String(r.result||''));r.readAsText(f);};
   if($('bSolo'))$('bSolo').onclick=()=>{keepName();App.solo=true;App.pickSlot=0;App.soloPick=App.soloPick||[{cls:'knight',sub:'oathkeeper'},{cls:'mage',sub:'pyre'},{cls:'cleric',sub:'saint'}];Story.load(()=>renderRoom(),650,'Choose your heroes');};
+  if($('bResC'))$('bResC').onclick=async()=>{keepName();const r=Save.coopPeek();if(!r)return;App.resume=true;try{await Net.host(r.S.mode||'adventure',r.S.diff||2);}catch(e){App.resume=false;$('msg').textContent='Could not create a room: '+(e.message||e.code);}};
+  if($('bDropC'))$('bDropC').onclick=()=>{if(!App._dcArm){App._dcArm=1;$('bDropC').textContent='Tap again to delete';setTimeout(()=>{App._dcArm=0;if($('bDropC'))$('bDropC').textContent='Delete save';},4000);return;}Save.coopClear();App._dcArm=0;App.menuView='main';renderMenu();};
   if($('bHost'))$('bHost').onclick=async()=>{keepName();try{await Net.host(App.pickMode||'adventure',App.pickDiff||2);}catch(e){$('msg').textContent='Could not create a run: '+(e.message||e.code);}};
   if($('bJoin'))$('bJoin').onclick=async()=>{keepName();$('msg').textContent='Connecting…';const e=await Net.joinAny($('code').value);if(e)$('msg').textContent=e;};
   if($('bInv'))$('bInv').onclick=async()=>{keepName();const m=$('imsg');try{m.textContent='Reading invite…';const r=await P2P.acceptInvite($('inv').value);$('ans').value=r.reply;$('ansbox').hidden=false;m.textContent='Send the reply code to your host. You will join automatically once they paste it.';await r.ready;const e=await Net.join(P2P.code);if(e)m.textContent=e;}catch(e){m.textContent='Invite problem: '+(e.message||e);}};
@@ -3977,12 +4000,13 @@ function renderRoom(){
    '<div class="pa" style="display:grid;gap:12px"><div class="lobby">'+ids.map(u=>{const p=App.players[u],on=u===App.uid||App.peers.includes(u);return '<div class="plr"><i class="dot '+(on?'on':'')+'"></i><b>'+esc(p.name)+'</b>'+(u===run.host?' <span class="tag">host</span>':'')+
      '<span class="dim">'+(p.cls?esc(CLS[p.cls].n+' · '+CLS[p.cls].subs[p.sub].n):'choosing')+'</span>'+(p.ready?' <span class="gold">ready ✓</span>':'')+'</div>';}).join('')+'</div>'+
    (me.cls?roster(me.cls):'')+'<div class="row" style="justify-content:center"><button class="btn" id="leave">Leave</button><button class="btn'+(me.ready?' sel':'')+'" id="rdy">'+(me.ready?'Not ready':'Ready')+'</button>'+
-   (host?'<button class="btn primary big" id="begin" style="width:auto;padding-inline:36px"'+(ids.length&&ids.every(u=>App.players[u].ready||u===App.uid)?'':' disabled')+'>Begin the run</button>':'<span class="note">Waiting for the host to begin.</span>')+(Net.hostGone()?'<button class="btn" id="take">Host left: take over</button>':'')+'</div></div></div>'+(me.cls?infoPanel(me,'Your hero'):'')+'</div>';
+   (host&&App.resume&&Save.coopPeek()?'<button class="btn primary big" id="resume" style="width:auto;padding-inline:36px">Resume the run</button>'+(Net.coopMissing().length?'<span class="note">Not here yet: '+Net.coopMissing().map(esc).join(', ')+' (you will play their hero)</span>':'<span class="note">Everyone is here.</span>'):host?'<button class="btn primary big" id="begin" style="width:auto;padding-inline:36px"'+(ids.length&&ids.every(u=>App.players[u].ready||u===App.uid)?'':' disabled')+'>Begin the run</button>':'<span class="note">Waiting for the host to begin.</span>')+(Net.hostGone()?'<button class="btn" id="take">Host left: take over</button>':'')+'</div></div></div>'+(me.cls?infoPanel(me,'Your hero'):'')+'</div>';
   wire(()=>Net.me,()=>{Net.savePlayer({ready:false});renderRoom();});
   $('rdy').onclick=()=>Net.savePlayer({ready:!me.ready});
-  $('leave').onclick=()=>{Net.disconnect();App.S=null;App.menuView='main';renderMenu();};
+  $('leave').onclick=()=>{App.resume=false;Net.disconnect();App.S=null;App.menuView='main';renderMenu();};
   P2P.panelShow(host);
-  if(host)$('begin').onclick=()=>Net.startRun();
+  if($('begin'))$('begin').onclick=()=>Net.startRun();
+  if($('resume'))$('resume').onclick=async()=>{const e=await Net.resumeRun();if(e)toast(e);App.resume=false;};
   if($('take'))$('take').onclick=()=>Net.takeover();
   Aud.setState('menu');show('room');
 }
