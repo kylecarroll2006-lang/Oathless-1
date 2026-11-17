@@ -5795,13 +5795,15 @@ lbSheet=window.lbSheet=function(){var h=_sheet(),sc=App.lbScope||'device',tab=Ap
   setTimeout(lbOnFill,30);}
  return h;};
 window.lbOnFill=function(){var el=document.getElementById('lbOn');if(!el||!base())return;var tab=App.lbTab==='coop'?'coop':'solo';
- fetch(base()+'/oathless_lb/'+tab+'.json').then(function(r){return r.json();}).then(function(d){
+ fetch(base()+'/oathless_lb/'+tab+'.json').then(function(r){window._lbSt=r.status;return r.json();}).then(function(d){
+  try{var mine=(lbLoad()[tab]||[]).filter(function(x){return x&&x.id&&!(d&&d[x.id]);});d=d&&!d.error?d:{};
+   mine.forEach(function(x){d[x.id]=Object.assign({},x,{v:1});fetch(base()+'/oathless_lb/'+tab+'/'+encodeURIComponent(x.id)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},x,{v:1}))}).catch(function(){});});}catch(e){}
   var L=Object.keys(d||{}).map(function(k){return d[k];}).filter(function(x){return x&&typeof x.s==='number';}).sort(function(a,b){return b.s-a.s;}).slice(0,25);
   if(!L.length){el.textContent='No online runs yet. Finish an Endless run to post the first score.';return;}
   var rows=L.map(function(e,i){var hs=(e.h||[]).map(function(h){var c=CLS[h.c];return c?'<i style="--c:'+c.col+'">'+c.g+'</i>':'';}).join('');
    return'<tr><td class="rk">'+(i+1)+'</td><td class="sc">'+fmt(e.s)+'</td><td><b>Wave '+e.w+'</b><div class="note">'+(DIFF[e.d]?DIFF[e.d].n:'')+'</div></td><td>'+esc2((e.p||[]).join(', ')||'Hero')+'</td><td><div class="lbp">'+hs+'</div></td></tr>';}).join('');
   el.className='';el.innerHTML='<table class="lbt"><tr><th></th><th>Score</th><th>Run</th><th>Player</th><th>Party</th></tr>'+rows+'</table>';
- }).catch(function(){el.textContent='Could not reach the online board. Check the URL and your database rules.';});};
+ }).catch(function(e){el.textContent='Could not load the online board. Details: '+(window._lbSt?'Firebase code '+window._lbSt+' · ':'no answer from Firebase · ')+String(e&&e.message||e)+' · page: '+location.protocol+'//'+(location.host||'(file)');});};
 var _rm=renderMenu;
 renderMenu=function(){var r=_rm.apply(this,arguments);try{var m=document.getElementById('menu')||document;
  document.querySelectorAll('[data-lbs]').forEach(function(x){x.onclick=function(){App.lbScope=x.dataset.lbs;renderMenu();};});
@@ -6414,6 +6416,12 @@ setInterval(function(){try{var S=App.S;if(!S||!S.daily){if(tm)tm.hidden=true;ret
 var base=function(){var u=(function(){try{return localStorage.getItem('oathless_lburl')||'';}catch(e){return'';}})()||window.OATHLESS_LB_URL||'';return u.replace(/\/+$/,'');};
 var fmt=function(ms){var s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return h?h+':'+('0'+(m%60)).slice(-2)+':'+('0'+(s%60)).slice(-2):m+':'+('0'+(s%60)).slice(-2);};
 var name=function(){try{return localStorage.getItem('oathless_name')||'Player';}catch(e){return'Player';}};
+/* remember the result of the last upload so problems are visible in the menu */
+var _f=window.fetch;window.fetch=function(u,o){var p=_f.apply(this,arguments);try{if(typeof u==='string'&&u.indexOf('firebaseio.com')>=0&&o&&o.method==='PUT'){var w=u.replace(base(),'').slice(0,40);p.then(function(r){try{localStorage.setItem('oathless_lastpost',JSON.stringify({ok:r.ok,s:r.status,t:Date.now(),u:w}));}catch(e){}},function(e){try{localStorage.setItem('oathless_lastpost',JSON.stringify({ok:false,s:0,t:Date.now(),u:w}));}catch(x){}});}}catch(e){}return p;};
+var upStat=function(){var r=null;try{r=JSON.parse(localStorage.getItem('oathless_lastpost'));}catch(e){}if(!r)return '<div class="note">Upload status: nothing sent from this device yet. Finish or abandon a run first.</div>';
+ var why=r.ok?'worked':r.s===401||r.s===403?'refused by Firebase. Open the Rules tab in the Firebase console, make sure the rules are published, and that oathless_lb allows .write.':r.s===0?'could not reach Firebase (offline, blocked, or wrong link).':'failed with code '+r.s+'.';
+ return '<div class="note">Last upload from this device ('+r.u+'): '+why+' <span class="dim">'+ago(r.t)+'</span></div>';};
+window.upStat=upStat;
 /* play clock for every run (pauses when you leave the game screen) */
 setInterval(function(){try{var S=App.S,g=document.getElementById('game');if(!S||!S.stats||!g||g.hidden||S.phase==='over'){window._pl=0;return;}var n=Date.now();if(window._pl)S.tplay=(S.tplay||0)+Math.min(2000,n-window._pl);window._pl=n;}catch(e){}},500);
 /* post every finished run automatically */
@@ -6426,7 +6434,7 @@ window.postRun=function(S){if(!base()||!S||S.posted)return;S.posted=1;
 setInterval(function(){try{var S=App.S;if(S&&S.phase==='over'&&S.over&&!S.posted&&!S.tutorial&&(S.solo||S.host===App.uid||true))postRun(S);}catch(e){}},1500);
 /* community runs view */
 var runs=null,err='',filt='all';
-window.loadRuns=function(cb){fetch(base()+'/oathless_lb/runs.json?orderBy=%22%24key%22&limitToLast=60').then(function(r){return r.json();}).then(function(j){runs=j&&!j.error?Object.keys(j).map(function(k){var e=j[k];e._k=k;return e;}).filter(function(e){return e&&e.h;}).sort(function(a,b){return b.t-a.t;}):[];err=j&&j.error?String(j.error):'';cb&&cb();}).catch(function(){err='Could not reach the online board.';runs=[];cb&&cb();});};
+window.loadRuns=function(cb){var ac=window.AbortController?new AbortController():null;if(ac)setTimeout(function(){ac.abort();},8000);fetch(base()+'/oathless_lb/runs.json?orderBy=%22%24key%22&limitToLast=60',ac?{signal:ac.signal}:undefined).then(function(r){if(!r.ok&&r.status!==200){return r.json().catch(function(){return {error:'Firebase answered with code '+r.status};}).then(function(j){if(!j.error)j.error='Firebase answered with code '+r.status;return j;});}return r.json();}).then(function(j){runs=j&&!j.error?Object.keys(j).map(function(k){var e=j[k];e._k=k;return e;}).filter(function(e){return e&&e.h;}).sort(function(a,b){return b.t-a.t;}):[];err=j&&j.error?String(j.error):'';cb&&cb();}).catch(function(){err='Could not reach the online board.';runs=[];cb&&cb();});};
 var ago=function(t){var s=Math.max(1,Math.round((Date.now()-t)/1000));return s<90?s+'s ago':s<5400?Math.round(s/60)+'m ago':s<172800?Math.round(s/3600)+'h ago':Math.round(s/86400)+'d ago';};
 var party=function(e){return '<div style="display:flex;gap:5px;margin-top:6px">'+e.h.map(function(h){var c=CLS[h.c];return c?'<span title="'+c.n+'" style="display:inline-block;width:26px;height:26px;border-radius:50%;border:2px solid '+c.col+';text-align:center;line-height:22px;font-size:13px">'+c.g+'</span>':'';}).join('')+'</div>';};
 var detail=function(e){return '<div class="note" style="margin:4px 0 8px;padding:8px;border:1px solid #d6ad5244;border-radius:8px">'+e.h.map(function(h){var c=CLS[h.c];var sub=c&&c.subs&&c.subs[h.s]?c.subs[h.s].n:'';
@@ -6442,7 +6450,7 @@ window.runsHtml=function(close){
  var tabs=[['all','All'],['win','Wins'],['daily','Daily'],['endless','Endless'],['coop','Co-op']].map(function(t){return '<button data-rf="'+t[0]+'" class="btn'+(filt===t[0]?' primary':'')+'" style="padding:4px 10px;min-height:30px">'+t[1]+'</button>';}).join('');
  var rows=L.map(function(e){var prog=e.mode==='arena'?'Wave '+e.wave:(e.win?'Cleared':'Act '+((e.act||0)+1)+' · step '+(e.dep||0));
   return '<div class="abl" data-run="'+e._k+'" style="cursor:pointer;display:block"><div><b>'+(e.by||'Player')+'</b> <span class="'+(e.win?'gold':'dim')+'">'+(e.win?'Victory':'Fell')+'</span><div class="fl">'+prog+' · '+(typeof DIFF!=='undefined'&&DIFF[e.d]?DIFF[e.d].n:'')+(e.daily?' · Daily '+e.daily:'')+(e.ms?' · '+fmt(e.ms):'')+' · '+ago(e.t)+'</div>'+party(e)+(open[e._k]?detail(e):'<div class="fl dim" style="margin-top:4px">Tap to see details</div>')+'</div>';}).join('');
- return '<div class="sheet pa" style="position:relative">'+close+'<h2>Community Runs</h2><p class="dim">Every finished run from every player lands here automatically. Tap a run to see the party, skills, gear and relics.</p><div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">'+tabs+'</div>'+(err?'<div class="note">'+err+'</div>':'')+
+ return '<div class="sheet pa" style="position:relative">'+close+'<h2>Community Runs</h2><p class="dim">Every finished run from every player lands here automatically. Tap a run to see the party, skills, gear and relics.</p><div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">'+tabs+'</div>'+upStat()+(err?'<div class="note">'+err+'</div>':'')+
   '<div style="display:grid;gap:7px;max-height:56vh;overflow:auto">'+(rows||(runs===null?'<div class="dim">Loading…</div>':'<div class="dim">No runs yet. Finish one and it shows up here.</div>'))+'</div></div>';};
 document.addEventListener('click',function(e){var f=e.target.closest&&e.target.closest('[data-rf]');if(f){filt=f.dataset.rf;renderMenu();return;}
  var r=e.target.closest&&e.target.closest('[data-run]');if(r){var o=App.runOpen||(App.runOpen={});o[r.dataset.run]=!o[r.dataset.run];renderMenu();}});
