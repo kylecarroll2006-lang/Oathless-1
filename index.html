@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Oathless</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>Oathless</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=Uncial+Antiqua&display=swap">
 <style>
@@ -326,6 +326,35 @@ input,select{background:#1b130c;color:var(--ink);border:1px solid #8a6b44;border
 #skinfo{position:absolute;left:50%;transform:translateX(-50%);bottom:150px;width:min(360px,calc(100% - 24px));background:linear-gradient(180deg,rgba(28,24,32,.96),rgba(12,11,16,.97));border:1px solid var(--gold);border-radius:8px;padding:9px 12px;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,.65);display:none;pointer-events:none;animation:skin .16s ease-out}@keyframes skin{from{opacity:0;transform:translate(-50%,8px)}}#skinfo .skh{display:flex;gap:10px;align-items:center}#skinfo .skh b{font-family:'Uncial Antiqua',serif;font-size:15px;color:#f2e3b8}#skinfo .skt{font-size:11px;color:var(--gold)}#skinfo .skf{font-style:italic;color:#b8ac90;font-size:12px;margin:5px 0 2px}#skinfo .skgo{font-size:10.5px;color:#8fd0f0;margin-top:5px;letter-spacing:.3px}@media(max-width:1100px){#skinfo{bottom:170px}}
 .ico{filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s,filter .12s}button:hover:not(:disabled) .ico,.abl:hover .ico,.bpc:hover .ico,.dslot:hover .ico{transform:scale(1.08);filter:drop-shadow(0 0 7px rgba(240,217,140,.65))}
 .rc.lockc{opacity:.45;filter:grayscale(.8)}.rc.lockc::after{content:'🔒';position:absolute;right:6px;top:4px;font-size:12px}
+:root{--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+/* ===== mobile landscape: see the board ===== */
+#viewtog{display:none}
+@media(orientation:landscape) and (max-height:520px){
+ body.ingame #viewtog{display:grid;place-items:center;position:fixed;left:calc(6px + var(--sl,0px));top:calc(60px + var(--st,0px));z-index:80;width:32px;height:32px;border-radius:50%;border:1px solid #8a6b44;background:rgba(20,14,8,.85);color:#e0b85a;font-size:17px;padding:0;min-height:0}
+ body.hidehud #party,body.hidehud #bar,body.hidehud #order,body.hidehud #endturn,body.hidehud #hud,body.hidehud #hint,body.hidehud #inspect{opacity:0;pointer-events:none}
+ body.hidehud #viewtog{background:#e0b85a;color:#1b130c}
+ #hud{transform:none!important;width:auto!important;padding:3px 10px!important;gap:10px!important;font-size:12px;top:0}
+ #hud .where{font-size:12px!important}#hud .where small,#hud small{display:none}
+ #hud .btn{min-height:26px!important;padding:2px 8px!important;font-size:12px}
+ #party{transform:none!important;zoom:.58;left:calc(4px + var(--sl,0px))!important;top:165px!important;width:190px!important}
+ #party .pips,#party .sts2{display:none}
+ #order{transform:none!important;top:30px!important;padding:2px 6px!important;gap:3px!important}#order .otl{display:none}
+ #order .oc{transform:scale(.62);transform-origin:top center;margin:0 -6px -14px}
+ #bar{transform:none!important;left:128px!important;right:124px!important;bottom:2px!important}
+ #bar .bwrap{padding:3px 8px 3px!important;gap:3px!important}
+ #bar .apr{display:none!important}
+ #bar .hpb2{display:none!important}#bar .mvb{height:13px!important}#bar .mvb span{font-size:9px!important;line-height:13px!important}
+ #bar .kb{min-height:0!important;padding:3px 7px!important}#bar .kb span:not(.kic):not(.cdo){display:none!important}#bar .kb kbd{display:none}
+ #bar .kb b{font-size:11px!important}
+ #bar .kb .kic,#bar .kb .kic .ico{width:36px!important;height:36px!important}#bar .kb .kic .ico svg{width:36px;height:36px}
+ #bar .kb .lvp,#bar .kb .pips{display:none!important}
+ #bar .kb.ab{min-width:54px}
+ #endturn{transform:none!important;right:calc(4px + var(--sr,0px))!important;bottom:4px!important;width:auto!important;gap:2px!important}
+ #endturn .btn.big{min-height:34px!important;font-size:13px!important;padding:3px 10px!important}#endturn .btn.big kbd{display:none}
+ #endturn label{font-size:9px!important}
+ #skinfo{bottom:96px!important;width:min(300px,60%)!important;font-size:11px}
+ .stage3d{height:calc(100dvh - var(--st,0px) - var(--sb,0px) - 4px)!important}
+}
 </style>
 <div id="bgwrap"></div>
 <div id="app">
@@ -551,7 +580,11 @@ const EN={
  seraph:{n:'Hollow Seraph',hp:42,atk:12,mv:4,rng:5,armor:0,ai:'ranged',xp:14,cost:4,g:'S',col:'#f0d98c',hit:['burn',2,3]},
  guardian:{n:'Gilded Guardian',hp:90,atk:14,mv:2,rng:1,armor:5,ai:'melee',xp:18,cost:6,g:'G',col:'#d4b45c'},
  judicator:{n:'Judicator',hp:48,atk:16,mv:2,rng:5,armor:1,ai:'caster',xp:18,cost:6,g:'J',col:'#f4e7b0',hit:['mark',2,1]},
- zealot:{n:'Sunless Zealot',hp:36,atk:13,mv:4,rng:1,armor:1,ai:'assassin',xp:14,cost:4,g:'Z',col:'#c97a5a'}
+ zealot:{n:'Sunless Zealot',hp:36,atk:13,mv:4,rng:1,armor:1,ai:'assassin',xp:14,cost:4,g:'Z',col:'#c97a5a'},
+ masque:{n:'Masked Duelist',hp:32,atk:12,mv:5,rng:1,armor:1,ai:'assassin',xp:14,cost:4,g:'D',col:'#b07ac8',hit:['bleed',2,2]},
+ choir:{n:'Weeping Chorister',hp:30,atk:9,mv:2,rng:5,armor:0,ai:'caster',xp:14,cost:4,g:'H',col:'#c8b8f0',hit:['curse',2,1]},
+ cherub:{n:'Fallen Cherub',hp:26,atk:11,mv:5,rng:4,armor:0,ai:'ranged',xp:12,cost:3,g:'C',col:'#ffd98a',hit:['burn',2,2]},
+ archon:{n:'Shattered Archon',hp:105,atk:17,mv:2,rng:1,armor:6,ai:'melee',xp:22,cost:6,g:'A',col:'#e8d79a',hit:['mark',2,1]}
 };
 const BOSS={
  vael:{n:'Vael, the Pale Herald',hp:230,atk:13,mv:2,rng:1,armor:2,ai:'boss',spec:'vael',xp:80,g:'V',col:'#e8e2cf',d:'Herald of the Dead God. Tomb-waves and risen ghouls.'},
@@ -562,14 +595,16 @@ const BOSS={
  ironvow:{n:'Warlord Ironvow',hp:330,atk:16,mv:3,rng:1,armor:4,ai:'boss',spec:'ironvow',xp:130,g:'I',col:'#e0b040',d:'A war-banner made flesh. Charges and rallying cries.'},
  noctis:{n:'Noctis, Lord of Eclipse',hp:420,atk:17,mv:3,rng:5,armor:2,ai:'boss',spec:'noctis',xp:190,g:'N',col:'#b080ff',d:'Steps through shadow to the weakest. Eclipse bursts.'},
  khemra:{n:'Khemra, the Glass Regent',hp:330,atk:16,mv:3,rng:4,armor:5,ai:'boss',spec:'khemra',xp:140,g:'K',col:'#9fe8ff',d:'A king of living crystal. Prism rays and shard storms.'},
- seraphine:{n:'Seraphine, the Sundered Sun',hp:430,atk:17,mv:3,rng:5,armor:3,ai:'boss',spec:'seraphine',xp:180,g:'X',col:'#ffd27a',d:'The sun that broke. Cross-beams of judgement.'}
+ seraphine:{n:'Seraphine, the Sundered Sun',hp:430,atk:17,mv:3,rng:5,armor:3,ai:'boss',spec:'seraphine',xp:180,g:'X',col:'#ffd27a',d:'The sun that broke. Cross-beams of judgement.'},
+ veyra:{n:'Veyra, the Masked Queen',hp:390,atk:16,mv:3,rng:1,armor:3,ai:'boss',spec:'veyra',xp:175,g:'Q',col:'#d070c0',d:'Hostess of the Hollow Court. Waltzes to the weakest guest.'},
+ cassiel:{n:'Cassiel, the Ashen Seraph',hp:440,atk:17,mv:3,rng:5,armor:3,ai:'boss',spec:'cassiel',xp:195,g:'E',col:'#ff9a4a',d:'The last Warden, burned and furious. Falling stars and wingfire.'}
 };
 const ACTS=[
  {n:'The Ashen Marches',pool:['ghoul','skarcher','cultist','brute','hexcrow','acolyte'],boss:'vael',bosses:['vael','vael','grakk','sylvane']},
  {n:'The Drowned Cathedrals',pool:['drowned','wraith','bellringer','lancer','priest','hexcrow','acolyte'],boss:'orrun',bosses:['orrun','orrun','mawth','ironvow']},
  {n:'The Glass Reliquary',pool:['wraith','lancer','priest','guardian','hexcrow','acolyte','judicator'],boss:'khemra',bosses:['khemra','khemra','ironvow','mawth']},
- {n:'The Hollow Court',pool:['judicator','zealot','brute','cultist','seraph','wraith','guardian'],boss:'noctis',bosses:['noctis','noctis','grakk','sylvane']},
- {n:'The Sundered Heaven',pool:['seraph','guardian','judicator','zealot','lancer','priest','bellringer'],boss:'seraphine',bosses:['seraphine']}];
+ {n:'The Hollow Court',pool:['masque','choir','judicator','zealot','brute','seraph','guardian'],boss:'noctis',bosses:['noctis','veyra','veyra','grakk']},
+ {n:'The Sundered Heaven',pool:['cherub','archon','seraph','guardian','judicator','zealot','choir'],boss:'seraphine',bosses:['seraphine','seraphine','cassiel']}];
 const AFFIX={
  blighted:{n:'Blighted',d:'Poisons on hit.',hit:['poison',2,3]},
  frenzied:{n:'Frenzied',d:'+1 move, +20% damage.',mv:1,atkx:1.2},
@@ -1136,6 +1171,17 @@ function bossSpec(S,b){
     if(T%3===0){const h=spread(1)[0];if(h){const c=[];for(let x=0;x<W;x++)c.push([x,h.y]);for(let y=0;y<H;y++)c.push([h.x,y]);mkTele(B,b,c,b.atk*.85,[['burn',2,3]],'Prism Ray');}}
     if(pct<=.6&&b.phase<1){b.phase=1;b.thorns=(b.thorns||0)+3;spawnAdds(S,b,'guardian',2);ev(B,{k:'t',id:b.id,s:'Mirror Skin'});}
     if(pct<=.3&&b.phase<2){b.phase=2;b.atk=Math.round(b.atk*1.25);hs.forEach(h=>addSt(B,h,'chill',2,0));ev(B,{k:'t',id:b.id,s:'Shatter'});}
+  } else if(b.spec==='veyra'){
+    if(T%2===1)spread(2).forEach(h=>mkTele(B,b,boxCells(h.x,h.y,1),b.atk*.9,[['bleed',2,3]],'Masquerade'));
+    if(T%3===0){const wk=hs.slice().sort((p,q)=>p.hp/p.mhp-q.hp/q.mhp)[0];if(wk){const sp=freeNear(B,wk.x-1,wk.y,2);if(sp){b.x=sp[0];b.y=sp[1];ev(B,{k:'t',id:b.id,s:'Curtain Call'});mkTele(B,b,boxCells(b.x,b.y,1),b.atk*1.2,[['curse',2,1]],'Last Waltz');}}}
+    if(pct<=.6&&b.phase<1){b.phase=1;spawnAdds(S,b,'masque',2);ev(B,{k:'t',id:b.id,s:'The ball begins'});}
+    if(pct<=.3&&b.phase<2){b.phase=2;b.atk=Math.round(b.atk*1.2);spawnAdds(S,b,'choir',1);hs.forEach(h=>addSt(B,h,'curse',2,1));ev(B,{k:'t',id:b.id,s:'Unmasked'});}
+  } else if(b.spec==='cassiel'){
+    if(T%2===0)spread(3).forEach(h=>mkTele(B,b,boxCells(h.x,h.y,1),b.atk*1.15,[['burn',2,3]],'Falling Star'));
+    else{spread(2).forEach(h=>mkTele(B,b,Array.from({length:H},(_,y)=>[h.x,y]),b.atk*.85,[['burn',2,3]],'Wingfall'));}
+    if(T%3===0){const h=spread(1)[0];if(h)mkTele(B,b,Array.from({length:W},(_,x)=>[x,h.y]),b.atk*.8,[['mark',2,1]],'Hymn of Ash');}
+    if(pct<=.6&&b.phase<1){b.phase=1;spawnAdds(S,b,'cherub',2);ev(B,{k:'t',id:b.id,s:'The choir burns'});}
+    if(pct<=.3&&b.phase<2){b.phase=2;b.atk=Math.round(b.atk*1.25);hs.forEach(h=>addSt(B,h,'mark',2,1));ev(B,{k:'t',id:b.id,s:'Ashen wrath'});}
   } else if(b.spec==='seraphine'){
     if(T%2===1)spread(2).forEach(h=>{const c=[];for(let x=0;x<W;x++)c.push([x,h.y]);for(let y=0;y<H;y++)c.push([h.x,y]);mkTele(B,b,c,b.atk*.9,[['burn',2,4]],'Sunbeam');});
     else spread(3).forEach(h=>mkTele(B,b,boxCells(h.x,h.y,1),b.atk*1.3,null,'Judgement'));
@@ -1148,7 +1194,7 @@ const TELEL={burn:'fire',poison:'poison',stun:'bolt',curse:'shadow',root:'nature
 function resolveTele(S){
   const B=S.B;
   for(const t of B.tele){
-    {const bu=B.units.find(x=>x.id===t.by);const el=(t.fx&&TELEL[t.fx[0][0]])||({vael:'shadow',orrun:'ice',seraphine:'holy',grakk:'fire',sylvane:'poison',mawth:'soul',ironvow:'quake',noctis:'shadow'})[bu&&bu.spec]||'shadow';
+    {const bu=B.units.find(x=>x.id===t.by);const el=(t.fx&&TELEL[t.fx[0][0]])||({vael:'shadow',orrun:'ice',seraphine:'holy',grakk:'fire',sylvane:'poison',mawth:'soul',ironvow:'quake',noctis:'shadow',veyra:'shadow',cassiel:'fire'})[bu&&bu.spec]||'shadow';
       ev(B,{k:'tl',id:t.by,el,cells:t.cells.slice(0,36)});}
     for(const u of alive(B,'h')){if(!t.cells.some(c=>c[0]===u.x&&c[1]===u.y))continue;
       dealDamage(S,null,u,t.dmg,{noreflect:1});
@@ -1541,6 +1587,8 @@ const STORY={
  boss:{vael:['"Little ash. Come, be counted."','"Every lantern here was a person. Do you want to see which?"'],
   orrun:['"Sink. All things sink. It is the kindest thing."','"You carry so many names. Let me hold them for you."'],
   grakk:['"The forge remembers every oath. It melts them all."'],sylvane:['"Bloom, little ash. Bloom and rot with me."'],mawth:['"A king must have subjects. Join the court."'],ironvow:['"Stand. Kneel. Fall. The banner does not care which."'],noctis:['"The sun is a lie. I am the honest dark."'],
+  veyra:['"Do come in. Everyone here has been dead for ages, but we do so love a new face."','"One dance. Then I keep the mask. Then I keep the face."'],
+  cassiel:['"I held the gate for a thousand years. Not one of you thanked me."','"Seraphine is mine to mourn. You are mine to burn."'],
   seraphine:['"Kneel to the light you broke."','"I kept the Dawn from you for your own good. Now I keep it from the world."']},
  win:[['Narrator','Seraphine falls, and the Sun-Throne mends along its cracks. Light spills across the Marches, the Cathedrals, the ash of Oathbreak.'],['Narrator','You were oathless when you began. Now, at last, you choose an oath: to keep the Dawn. The world wakes.']],
  lose:[['Narrator','The lanterns count one more. But somewhere in the dark, an oath is still burning. Another party will take up the road.']],
@@ -1607,7 +1655,7 @@ const Story={
     if(S.phase==='map'&&S.step===0&&S.mode!=='arena'&&App.storyAct!==S.id+':'+act){App.storyAct=S.id+':'+act;if(!this.open())this.say(STORY.act[act].map(x=>x.slice()));return;}
     if(S.phase==='map'&&S.mode!=='arena'&&(S.step===2||S.step===4)&&!this.open()){const k=S.id+':'+act+':'+S.step;if(App.storyMid!==k&&!(App.storyMids||(App.storyMids={}))[k]){App.storyMids[k]=1;App.storyMid=k;const m=STORY.mid[act]&&STORY.mid[act][S.step/2-1];if(m){this.say(m.map(x=>x.slice()));return;}}}
     if(S.phase==='battle'&&S.B&&S.B.kind==='boss'&&App.storyBoss!==S.id+':'+act){App.storyBoss=S.id+':'+act;const b=bossOf(S,act);const ls=STORY.boss[b]||['"You should not have come."'];this.say([[ 'Narrator','You stand before '+BOSS[b].n+'.' ],[BOSS[b].n.split(',')[0].replace('Warlord ',''),pickLine(ls,S.id+act)]]);return;}
-    if(S.phase==='over'&&App.storyEnd!==S.id){App.storyEnd=S.id;if(S.mode!=='arena'&&!(S.over&&S.over.abandoned))this.say((S.over&&S.over.win?STORY.win:STORY.lose).map(x=>x.slice()));}
+    if(S.phase==='over'&&App.storyEnd!==S.id){App.storyEnd=S.id;if(S.mode!=='arena'&&!(S.over&&S.over.abandoned)){const L=(S.over&&S.over.win?STORY.win:STORY.lose).map(x=>x.slice());if(S.over&&S.over.win&&S.bpick&&S.bpick[4]==='cassiel'&&L[0])L[0][1]=String(L[0][1]).replace('Seraphine falls, and the Sun-Throne mends','Cassiel falls, and the unguarded Sun-Throne mends');this.say(L);}}
   },
   /* inline speech inside shop / event / rest panels */
   decorate(S,el){
@@ -2793,8 +2841,8 @@ function deathFx(v){const p=v.pos(),c=v.u&&v.u.team==='h'?[1,.9,.6]:[.85,.85,.9]
 /* ===== VFX 3: enemy and boss attack effects, telegraph strikes ===== */
 const EVFX={ghoul:{el:'poison'},skarcher:{el:'nature',arrow:1},cultist:{el:'fire'},brute:{el:'quake',heavy:1},hexcrow:{el:'poison'},acolyte:{el:'holy'},
  drowned:{el:'ice'},wraith:{el:'shadow'},bellringer:{el:'bolt',heavy:1},lancer:{el:'steel',pierce:1},priest:{el:'holy'},seraph:{el:'holy'},guardian:{el:'steel',heavy:1},
- judicator:{el:'holy',heavy:1},zealot:{el:'fire'}};
-const BEL={vael:'shadow',orrun:'ice',seraphine:'holy',grakk:'fire',sylvane:'poison',mawth:'soul',ironvow:'quake',noctis:'shadow'};
+ judicator:{el:'holy',heavy:1},zealot:{el:'fire'},masque:{el:'steel',pierce:1},choir:{el:'shadow'},cherub:{el:'holy',arrow:1},archon:{el:'holy',heavy:1}};
+const BEL={vael:'shadow',orrun:'ice',seraphine:'holy',grakk:'fire',sylvane:'poison',mawth:'soul',ironvow:'quake',noctis:'shadow',veyra:'shadow',cassiel:'fire'};
 function enemyFx(e,v,src,tgt,yaw){
   const u=v.u,ty=u.type||'',boss=!!u.boss,info=boss?{el:BEL[u.spec]||'shadow',heavy:1}:(EVFX[ty]||{el:'steel'});
   const el=info.el,c=ECOL[el]||[1,.9,.8];v.lastCol=c;
@@ -4582,4 +4630,43 @@ function pauseOpen(){
 }
 document.addEventListener('keydown',e=>{if((e.key==='p'||e.key==='P')&&App.S&&document.body.classList.contains('ingame')&&!/INPUT|TEXTAREA/.test((e.target||{}).tagName||'')){const o=$('pausov');if(o&&!o.hidden)o.hidden=true;else pauseOpen();}});
 
+</script>
+<script>
+/* ===== MODELS 10: act 4-5 enemies and bosses ===== */
+(function(){
+const F=window.figure4;if(!F||typeof ENEMY_MODELS==='undefined')return;
+const R_=()=>({a:'armR',pv:[.34,1.25,0]}),L_=()=>({a:'armL',pv:[-.34,1.25,0]});
+const mk=(opts,fn,sc,extra)=>()=>{try{const P=F(opts),A=(...a)=>P.push(pt(...a));fn(A,P);const m={parts:P,sc:sc||1};if(extra)Object.assign(m,extra);return m;}catch(e){console.error('model10',e);return null;}};
+const wing=(A,col,e,n,len,sp)=>{for(const s of[-1,1])for(let i=0;i<n;i++)A('box',s*(.3+i*.07),1.35-i*.1,-.2-i*.03,.03,len-i*.08,.16,col,{a:'body',tr:0,e:e,r:[0,0,s*(.5+i*sp)]});};
+const E10={
+ masque:mk({cl:'#5a2a6a',cl2:'#8a4a9a',armor:'leather',trim:'#e0c070',leg:'#1a1020',boots:'#100a14',sk:'#e8d8c8',hair:'#1a1020',hs:'short',eye:'#ffd0ff',glow:true,w:.9,glove:'#2a1a30'},(A)=>{
+  A('box',0,1.58,.15,.2,.26,.03,'#f6f0e6',{a:'body',e:.2});A('box',-.05,1.62,.17,.05,.03,.01,'#1a1020',{a:'body'});A('box',.05,1.62,.17,.05,.03,.01,'#1a1020',{a:'body'});A('box',0,1.7,-.05,.04,.3,.08,'#e0c070',{a:'body',r:[-.5,0,0]});
+  for(const s of[-1,1]){const a=s<0?L_():R_();A('box',s*.36,.52,.2,.025,.025,.6,'#e8e8f4',Object.assign({e:.8},a));A('box',s*.36,.52,.0,.07,.07,.06,'#e0c070',a);}},.98),
+ choir:mk({cl:'#e8e0f0',cl2:'#c8b8e0',armor:'robe',trim:'#8a70c0',leg:'#b8a8d0',boots:'#8a78a8',sk:'#e6d8e0',hair:'#c8b8e0',hs:'long',eye:'#b8a0ff',glow:true,w:1.0,sash:'#8a70c0',glove:'#e8e0f0'},(A)=>{
+  A('ring',0,1.82,0,.22,1,.22,'#c8b0ff',{e:1.3,lit:0,cull:false,a:'body'});A('box',-.07,1.52,.14,.012,.18,.01,'#9ad0ff',{a:'body',e:1});A('box',.07,1.52,.14,.012,.18,.01,'#9ad0ff',{a:'body',e:1});
+  for(let i=0;i<4;i++)A('sph',0,1.3,0,.07,.07,.07,'#d8c8ff',{a:'orbit',pv:[0,1.3,0],ph:i*1.57,e:1.5,lit:0});},1.05),
+ cherub:mk({cl:'#f4e6c0',cl2:'#ffffff',armor:'leather',trim:'#e0a63e',leg:'#d8c48a',boots:'#b89a50',sk:'#f4d8b0',hair:'#ffe9a0',hs:'short',eye:'#ffb040',glow:true,w:.78,glove:'#f4e6c0'},(A)=>{
+  wing(A,'#fff1c8',.5,3,.7,.22);A('ring',0,1.8,0,.2,1,.2,'#ffd27a',{e:1.5,lit:0,cull:false,a:'body'});
+  const R=R_();A('box',.42,.9,.2,.03,1.1,.03,'#ffe9a0',Object.assign({e:1.1},R));A('sph',.42,.9,.2,.08,.08,.08,'#ffb040',Object.assign({e:1.8},R));},.92,{fl:.35}),
+ archon:mk({cl:'#b8a070',cl2:'#d8c88c',armor:'plate',plate:'#d8c88c',trim:'#fff0b0',leg:'#8a7440',boots:'#5a4a22',sk:'#e8d79a',hair:'#fff0b0',hs:'none',eye:'#ffe27a',glow:true,w:1.6,glove:'#d8c88c'},(A)=>{
+  A('ring',0,1.95,-.05,.34,1,.34,'#ffe27a',{e:1.3,lit:0,cull:false,a:'body',r:[.3,0,0]});A('box',.22,1.95,-.05,.1,.05,.03,'#0a0806',{a:'body'});
+  for(const s of[-1,1])for(let i=0;i<3;i++)A('box',s*(.42+i*.1),1.45-i*.12,-.25,.05,.8-i*.12,.2,'#f4ecc0',{a:'body',tr:0,e:.3,r:[0,0,s*(.6+i*.2)]});
+  const R=R_();A('box',.55,.5,.2,.07,1.9,.05,'#fff6d0',Object.assign({e:.6},R));A('box',.55,.4,.2,.38,.07,.1,'#d8c88c',R);const L=L_();A('box',-.58,.95,.18,.1,1.0,.6,'#e8d79a',Object.assign({e:.2},L));},1.55),
+ veyra:mk({cl:'#3a0f2a',cl2:'#5a1a40',armor:'robe',trim:'#e0b060',leg:'#2a0a1c',boots:'#1a0610',sk:'#e8d0c8',hair:'#1a0a14',hs:'long',eye:'#ff90e0',glow:true,w:1.1,sash:'#e0b060',glove:'#3a0f2a'},(A)=>{
+  A('box',0,1.6,.15,.22,.18,.03,'#f6ecf0',{a:'body',e:.25});A('box',-.06,1.63,.17,.05,.03,.01,'#1a0a14',{a:'body'});A('box',.06,1.63,.17,.05,.03,.01,'#1a0a14',{a:'body'});
+  for(let i=0;i<9;i++){const a=(i-4)*.3;A('cyl',Math.sin(a)*.3,1.9+Math.cos(a)*.14,-.18,.03,.6,.03,i%2?'#d070c0':'#e0b060',{a:'body',tr:0,e:.7,r:[0,0,-a]});}
+  const R=R_();A('cyl',.42,.9,.18,.03,1.5,.03,'#e0b060',R);A('box',.42,1.7,.18,.14,.18,.04,'#f6ecf0',Object.assign({e:.5},R));
+  for(let i=0;i<5;i++)A('box',0,1.1,0,.07,.1,.02,'#ff90e0',{a:'orbit',pv:[0,1.1,0],ph:i*1.26,e:1.4,lit:0});},1.5),
+ cassiel:mk({cl:'#2a2220',cl2:'#4a3a34',armor:'plate',plate:'#c8d0e0',trim:'#ff9a4a',leg:'#1c1614',boots:'#120e0c',sk:'#9a8a80',hair:'#fff2e0',hs:'long',eye:'#ff8a2a',glow:true,w:1.3,glove:'#c8d0e0'},(A)=>{
+  wing(A,'#2a1a14',.2,4,1.1,.2);wing(A,'#ff7a2a',1.1,4,1.12,.2);
+  A('ring',0,2.0,-.1,.4,1,.4,'#ff9a4a',{e:1.5,lit:0,cull:false,a:'body',r:[.4,0,0]});A('box',.3,2.0,-.1,.14,.06,.03,'#0a0604',{a:'body'});
+  const R=R_();A('box',.42,1.4,.2,.1,2.2,.04,'#ffd0a0',Object.assign({e:1.1},R));A('box',.42,1.4,.215,.03,2.1,.01,'#ffffff',Object.assign({e:1.8,lit:0},R));A('box',.42,.5,.2,.4,.07,.09,'#c8d0e0',R);
+  for(let i=0;i<5;i++)A('sph',0,1.2,0,.06,.06,.06,'#ff9a4a',{a:'orbit',pv:[0,1.2,0],ph:i*1.26,e:1.8,lit:0});},1.6)
+};
+for(const k in E10){const nw=E10[k],old=ENEMY_MODELS[k];ENEMY_MODELS[k]=function(){const m=nw();return m||(old?old():ENEMY_MODELS.ghoul());};}
+})();
+</script>
+<script>
+(function(){function add(){if(document.getElementById('viewtog')||!document.body)return;var b=document.createElement('button');b.id='viewtog';b.type='button';b.title='Hide or show the interface';b.textContent='\uD83D\uDC41';b.onclick=function(e){e.stopPropagation();document.body.classList.toggle('hidehud');};document.body.appendChild(b);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();})();
 </script>
